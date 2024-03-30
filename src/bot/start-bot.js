@@ -6,7 +6,7 @@ database.setup();
 
 const startCycle = async (strategy) => {
   logger.info('Start new cycle...');
-  if (await hasOpenPosition()) return await checkTrailstrategy.ingStopLoss();
+  if (await hasOpenPosition()) return await strategy.checkTrailingStopLoss();
   if (await strategy.hasEntryPosition()) await createPosition();
 };
 

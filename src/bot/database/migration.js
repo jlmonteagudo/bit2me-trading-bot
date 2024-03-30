@@ -31,12 +31,13 @@ export const createSchema = () => {
         CREATE INDEX idx_positions_entry_datetime ON positions (entryDatetime);
         CREATE INDEX idx_positions_profig ON positions (profit);
     `);
+
   logger.info('Database schema has been created');
 };
 
 export const isSchemaCreated = () => {
   const query = database.prepare(
-    `SELECT count(*) as count FROM sqlite_master WHERE type='table' AND name='users';`
+    `SELECT count(*) as count FROM sqlite_master WHERE type='table' AND name='positions';`
   );
 
   const result = query.get();
