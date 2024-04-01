@@ -7,7 +7,9 @@ database.setup();
 const startCycle = async (strategy) => {
   logger.info('Start new cycle...');
   if (await hasOpenPosition()) return await strategy.checkTrailingStopLoss();
-  if (await strategy.hasEntryPosition()) await createPosition();
+
+  const entryPositionSymbol = await strategy.getEntryPositionSymbol();
+  if (entryPositionSymbol) await createPosition(entryPositionSymbol);
 };
 
 export const startBot = (strategy) => {
