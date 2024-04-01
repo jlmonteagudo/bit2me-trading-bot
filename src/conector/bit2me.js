@@ -12,7 +12,17 @@ export const getOpenOrders = async (symbol) => {
 };
 
 export const getOrder = async (orderId) => {
-  throw new Error('Not implemented yet');
+  const url = `${BASE_PATH}/order/${orderId}`;
+  const requestConfig = getAuthHeaders(url);
+  const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);
+  return response.data;
+};
+
+export const getTradesByOrder = async (orderId) => {
+  const url = `${BASE_PATH}/order/${orderId}/trades`;
+  const requestConfig = getAuthHeaders(url);
+  const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);
+  return response.data;
 };
 
 export const cancelOrder = async (orderId) => {
@@ -77,7 +87,13 @@ export const getOrderBook = async (symbol) => {
 };
 
 export const getMarket = async (symbol) => {
-  throw new Error('Not implemented yet');
+  try {
+    const url = `${BASE_PATH}/market-config?symbol=${symbol}`;
+    const response = await axios.get(`${SERVER_URL}${url}`);
+    return response.data[0];
+  } catch (error) {
+    return undefined;
+  }
 };
 
 export const getTickers = async () => {

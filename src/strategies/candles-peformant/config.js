@@ -1,4 +1,5 @@
 export const config = {
+  production: false,
   cycleInterval: 60000,
   candleInterval: 5,
   numberOfCandles: 1,

@@ -1,41 +1,85 @@
-import { getBalance, getOrderBook } from '../../../../conector/bit2me.js';
+import {
+  createOrder,
+  getBalance,
+  getMarket,
+  getOrderBook,
+  getTradesByOrder,
+} from '../../../../conector/bit2me.js';
 import { logger } from '../../../core/logger.js';
-import { OrderBookItemEnum } from '../enums/order-book-item.enum.js';
+import { OrderSide } from '../enums/order-side.enum.js';
+import { OrderType } from '../enums/order-type.enum.js';
+import {
+  getAmountBasedOnQuoteBalance,
+  getMaxPriceOfTrades,
+  truncateFloat,
+} from '../utils.js';
 
 export const createPosition = async (symbol) => {
   logger.info(`Creating a new position for ${symbol}`);
 
+  const market = await getMarket(symbol);
+  if (!market) return;
+
   const quoteCurrency = symbol.split('/')[1];
   const quoteBalance = await getBalance(quoteCurrency);
-  const amount = await getAmountBasedOnQuoteBalance(symbol, quoteBalance);
+
+  if (quoteBalance < 100) return;
+
+  const orderBook = await getOrderBook(symbol);
+  const amount = getAmountBasedOnQuoteBalance(quoteBalance, orderBook);
 
   if (amount <= 0) return;
 
-  console.log({ quoteBalance, amount });
+  const entryOrder = await createEntryOrder(market, amount);
+  const entryOrderTrades = await getTradesByOrder(entryOrder.id);
+  const maxPrice = getMaxPriceOfTrades(entryOrderTrades);
+  const exitOrder = await createExitOrder(market, entryOrder.amount, maxPrice);
+  savePosition(entryOrder, exitOrder);
 };
 
-export const getAmountBasedOnQuoteBalance = async (symbol, balance) => {
-  const orderBook = await getOrderBook(symbol);
-  if (!orderBook) return 0;
+const createEntryOrder = async (market, amount) => {
+  amount = amount * 0.99;
+  amount = truncateFloat(amount, market.amountPrecision);
 
-  console.log({ orderBook });
+  const createdOrder = {
+    symbol: market.symbol,
+    amount,
+    id: 'ba8daf86-c49e-4ecd-aaf1-2614a2e5edf0',
+  };
+  console.log('CREATING ENTRY ORDER', createdOrder);
 
-  // const asks = orderBook.asks;
-  // let amount = 0;
-  // let cost = 0;
-  // let index = 0;
+  return createdOrder;
 
-  // while (cost < balance) {
-  //   const askItem = asks[index];
-  //   const itemCost =
-  //     askItem[OrderBookItemEnum.Price] * askItem[OrderBookItemEnum.Volume];
-  // }
-
-  // console.log({ asks });
-
-  // return quoteBalance;
-
-  const amount = 0;
-
-  return amount;
+  // return createOrder(
+  //   symbol,
+  //   OrderSide.Buy,
+  //   OrderType.Market,
+  //   amount,
+  //   undefined,
+  //   undefined,
+  //   undefined
+  // );
 };
+
+const createExitOrder = async (market, amount, price) => {
+  const stopPrice = truncateFloat(price * 0.99, market.pricePrecision);
+  price = truncateFloat(stopPrice * 0.99, market.pricePrecision);
+  amount = truncateFloat(amount, market.amountPrecision);
+
+  const createdOrder = { symbol: market.symbol, amount, price, stopPrice };
+  console.log('CREATING EXIT ORDER', createdOrder);
+
+  return createdOrder;
+
+  // return createOrder(
+  //   symbol,
+  //   OrderSide.Sell,
+  //   OrderType.StopLimit,
+  //   amount,
+  //   price,
+  //   stopPrice,
+  //   undefined
+  // );
+};
+
+const savePosition = async (entryOrder, exitOrder) => {};
