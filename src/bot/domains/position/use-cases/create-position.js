@@ -2,6 +2,7 @@ import {
   createOrder,
   getBalance,
   getMarket,
+  getOrder,
   getOrderBook,
   getTradesByOrder,
 } from '../../../../conector/bit2me.js';
@@ -13,6 +14,8 @@ import {
   getMaxPriceOfTrades,
   truncateFloat,
 } from '../utils.js';
+import { database } from '../../../database/index.js';
+import { PositionStatus } from '../enums/position-status.enum.js';
 
 export const createPosition = async (symbol) => {
   logger.info(`Creating a new position for ${symbol}`);
@@ -32,9 +35,14 @@ export const createPosition = async (symbol) => {
 
   const entryOrder = await createEntryOrder(market, amount);
   const entryOrderTrades = await getTradesByOrder(entryOrder.id);
+  const createdEntryOrder = await getOrder(entryOrder.id);
   const maxPrice = getMaxPriceOfTrades(entryOrderTrades);
-  const exitOrder = await createExitOrder(market, entryOrder.amount, maxPrice);
-  savePosition(entryOrder, exitOrder);
+  const exitOrder = await createExitOrder(
+    market,
+    createdEntryOrder.orderAmount,
+    maxPrice
+  );
+  savePosition(createdEntryOrder, exitOrder);
 };
 
 const createEntryOrder = async (market, amount) => {
@@ -43,8 +51,11 @@ const createEntryOrder = async (market, amount) => {
 
   const createdOrder = {
     symbol: market.symbol,
-    amount,
+    orderAmount: amount,
     id: 'ba8daf86-c49e-4ecd-aaf1-2614a2e5edf0',
+    price: 60000,
+    cost: 100,
+    updatedAt: new Date(),
   };
   console.log('CREATING ENTRY ORDER', createdOrder);
 
@@ -66,7 +77,14 @@ const createExitOrder = async (market, amount, price) => {
   price = truncateFloat(stopPrice * 0.99, market.pricePrecision);
   amount = truncateFloat(amount, market.amountPrecision);
 
-  const createdOrder = { symbol: market.symbol, amount, price, stopPrice };
+  const createdOrder = {
+    symbol: market.symbol,
+    amount,
+    price,
+    stopPrice,
+    id: 'a-b-c-d',
+    updatedAt: new Date(),
+  };
   console.log('CREATING EXIT ORDER', createdOrder);
 
   return createdOrder;
@@ -82,4 +100,68 @@ const createExitOrder = async (market, amount, price) => {
   // );
 };
 
-const savePosition = async (entryOrder, exitOrder) => {};
+/*
+
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          symbol TEXT NOT NULL,
+          status TEXT NOT NULL,
+          entryOrderId TEXT NOT NULL,
+          exitOrderId TEXT NOT NULL,
+          positionBaseAmount NUMERIC,
+          entryPrice NUMERIC,
+          exitPrice NUMERIC,
+          entryQuoteAmount NUMERIC,
+          exitQuoteAmount NUMERIC,
+          profit NUMERIC,
+          entryDatetime NUMERIC,
+          exitDatetime NUMERIC
+
+
+*/
+
+const savePosition = async (entryOrder, exitOrder) => {
+  const position = {
+    symbol: entryOrder.symbol,
+    status: PositionStatus.Open,
+    entryOrderId: entryOrder.id,
+    exitOrderId: exitOrder.id,
+    positionBaseAmount: entryOrder.orderAmount,
+    entryPrice: entryOrder.price,
+    exitPrice: exitOrder.price,
+    entryQuoteAmount: entryOrder.cost,
+    exitQuoteAmount: undefined,
+    profit: undefined,
+    entryDatetime: new Date(entryOrder.updatedAt).getTime(),
+    exitDatetime: new Date(exitOrder.updatedAt).getTime(),
+  };
+
+  const insert = database.prepare(`INSERT INTO positions (
+    symbol,
+    status,
+    entryOrderId,
+    exitOrderId,
+    positionBaseAmount,
+    entryPrice,
+    exitPrice,
+    entryQuoteAmount,
+    exitQuoteAmount,
+    profit,
+    entryDatetime,
+    exitDatetime
+  ) VALUES (
+    @symbol,
+    @status,
+    @entryOrderId,
+    @exitOrderId,
+    @positionBaseAmount,
+    @entryPrice,
+    @exitPrice,
+    @entryQuoteAmount,
+    @exitQuoteAmount,
+    @profit,
+    @entryDatetime,
+    @exitDatetime
+  )`);
+
+  insert.run(position);
+};
