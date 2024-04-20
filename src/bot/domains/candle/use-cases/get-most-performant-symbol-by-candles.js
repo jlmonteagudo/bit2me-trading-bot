@@ -1,3 +1,4 @@
+import { logger } from '../../../core/logger.js';
 import { getCandles } from '../../../../conector/bit2me.js';
 import { CandleEnum } from '../enums/candle.enum.js';
 import { getPercentagePriceVariation } from '../utils.js';
@@ -14,7 +15,7 @@ export const getMostPerformantSymbolByCandles = async (
 
   const candleIntervalSummaries = await Promise.all(promises);
 
-  console.log(candleIntervalSummaries);
+  logCandleIntervalSummaries(candleIntervalSummaries);
 
   const positiveCandleIntervalSummaries = candleIntervalSummaries
     .filter((summary) => !!summary)
@@ -68,5 +69,11 @@ const getIntervalPercentagePriceVariation = (candles) => {
     ((lastCandle[CandleEnum.Close] - firstCandle[CandleEnum.Open]) /
       firstCandle[CandleEnum.Open]) *
     100
+  );
+};
+
+const logCandleIntervalSummaries = (candleIntervalSummaries) => {
+  candleIntervalSummaries.forEach((summary) =>
+    logger.info(JSON.stringify(summary))
   );
 };

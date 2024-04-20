@@ -14,3 +14,9 @@ estrategia decide si activa la validación de estos métodos de salida.
 Los pares pueden estar preseleccionados en la estrategia, o se podría indicar que se base en tickers (últimas 24 horas). Independientemente de cuál de los métodos se utilice habría que comprobar que el volumen en la moneda cuota sea superior a cierto valor.
 
 Hay que parametrizar en la estrategia el valor de stopLossPercentage (0.99 debería ser stopLossPercentage = 1. 0.99 se calcularía mediante (100 - stopLossPercentate) / 100): const stopPrice = truncateFloat(price \* 0.99, market.pricePrecision);
+
+---
+
+- si hay una posición abierta, validar si al orden está open, filled or cancelled. Si está filled o cancelled hay que cancelar la posición. Si la orden está filled, entonces hay que cerrar la posición
+
+- al cancelar, si ya no existe, da error. gestionar error en try catch

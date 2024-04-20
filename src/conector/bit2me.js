@@ -26,7 +26,10 @@ export const getTradesByOrder = async (orderId) => {
 };
 
 export const cancelOrder = async (orderId) => {
-  throw new Error('Not implemented yet');
+  const url = `${BASE_PATH}/order/${orderId}`;
+  const requestConfig = getAuthHeaders(url);
+  const response = await axios.delete(`${SERVER_URL}${url}`, requestConfig);
+  return response.data;
 };
 
 export const getBalance = async (symbol) => {
@@ -50,7 +53,7 @@ export const createOrder = async (
     side,
     orderType,
     amount: amount.toString(),
-    price: price.toString(),
+    price: price?.toString(),
     stopPrice: stopPrice?.toString(),
     clientOrderId,
   };
@@ -97,5 +100,21 @@ export const getMarket = async (symbol) => {
 };
 
 export const getTickers = async () => {
-  throw new Error('Not implemented yet');
+  try {
+    const url = '/v2/trading/tickers';
+    const response = await axios.get(`${SERVER_URL}${url}`);
+    return response.data;
+  } catch (error) {
+    return [];
+  }
+};
+
+export const getTicker = async (symbol) => {
+  try {
+    const url = '/v2/trading/tickers';
+    const response = await axios.get(`${SERVER_URL}${url}`);
+    return response.data.filter((ticker) => ticker.symbol === symbol)[0];
+  } catch (error) {
+    return undefined;
+  }
 };
