@@ -1,10 +1,4 @@
-import {
-  getBalance,
-  getMarket,
-  getOrder,
-  getOrderBook,
-  getTradesByOrder,
-} from '../../../../conector/bit2me.js';
+import * as connector from '../../../../conector/bit2me.js';
 import { logger } from '../../../core/logger.js';
 import { getAmountBasedOnQuoteBalance, getMaxPriceOfTrades } from '../utils.js';
 import { PositionStatus } from '../enums/position-status.enum.js';
@@ -19,21 +13,22 @@ export const createPosition = async (
 ) => {
   logger.info(`Creating a new position for ${symbol}`);
 
-  const market = await getMarket(symbol);
+  const market = await connector.getMarket(symbol);
   if (!market) return;
 
   const [baseCurrency, quoteCurrency] = symbol.split('/');
-  const quoteBalance = quoteOrderAmount ?? (await getBalance(quoteCurrency));
-  const orderBook = await getOrderBook(symbol);
+  const quoteBalance =
+    quoteOrderAmount ?? (await connector.getBalance(quoteCurrency));
+  const orderBook = await connector.getOrderBook(symbol);
   const amount = getAmountBasedOnQuoteBalance(quoteBalance, orderBook);
 
   if (amount <= 0) return;
 
   const entryOrder = await createEntryOrder(market, amount);
-  const entryOrderTrades = await getTradesByOrder(entryOrder.id);
-  const createdEntryOrder = await getOrder(entryOrder.id);
+  const entryOrderTrades = await connector.getTradesByOrder(entryOrder.id);
+  const createdEntryOrder = await connector.getOrder(entryOrder.id);
   const maxPrice = getMaxPriceOfTrades(entryOrderTrades);
-  const exitOrderAmount = await getBalance(baseCurrency);
+  const exitOrderAmount = await connector.getBalance(baseCurrency);
 
   const exitOrder = await createExitOrder(
     market,

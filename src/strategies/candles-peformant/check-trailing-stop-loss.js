@@ -1,24 +1,15 @@
 import { logger } from '../../bot/core/logger.js';
-import {
-  getOpenPosition,
-  createExitOrder,
-  updatePosition,
-} from '../../bot/domains/position/index.js';
+import * as positionDomain from './domains/position/index.js';
+import * as connector from '../../conector/bit2me.js';
 import { truncateFloat } from '../../bot/domains/position/utils.js';
-import {
-  cancelOrder,
-  getOrder,
-  getTicker,
-  getMarket,
-} from '../../conector/bit2me.js';
 
 export const checkTrailingStopLoss = async (stopLossPercentage) => {
   logger.info('Checking trailing stop loss');
 
-  const position = await getOpenPosition();
-  const market = await getMarket(position.symbol);
-  const ticker = await getTicker(position.symbol);
-  const exitOrder = await getOrder(position.exitOrderId);
+  const position = await positionDomain.getOpenPosition();
+  const market = await connector.getMarket(position.symbol);
+  const ticker = await connector.getTicker(position.symbol);
+  const exitOrder = await connector.getOrder(position.exitOrderId);
 
   if (!market || !exitOrder) return;
 
@@ -38,8 +29,8 @@ export const checkTrailingStopLoss = async (stopLossPercentage) => {
   if (newStopPrice > exitOrder.stopPrice) {
     logger.info('Creating a new exit order with the new stop price');
 
-    await cancelOrder(position.exitOrderId);
-    const newExitOrder = await createExitOrder(
+    await connector.cancelOrder(position.exitOrderId);
+    const newExitOrder = await positionDomain.createExitOrder(
       market,
       exitOrder.orderAmount,
       currentPrice,
@@ -49,6 +40,6 @@ export const checkTrailingStopLoss = async (stopLossPercentage) => {
     position.exitOrderId = newExitOrder.id;
     position.exitPrice = newExitOrder.price;
 
-    updatePosition(position);
+    positionDomain.updatePosition(position);
   }
 };

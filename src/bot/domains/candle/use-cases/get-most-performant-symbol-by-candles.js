@@ -1,5 +1,5 @@
 import { logger } from '../../../core/logger.js';
-import { getCandles } from '../../../../conector/bit2me.js';
+import * as connector from '../../../../conector/bit2me.js';
 import { CandleEnum } from '../enums/candle.enum.js';
 import { getPercentagePriceVariation } from '../utils.js';
 
@@ -42,7 +42,12 @@ const getCandleIntervalSummary = async (
   startTime,
   endTime
 ) => {
-  const candles = await getCandles(symbol, interval, startTime, endTime);
+  const candles = await connector.getCandles(
+    symbol,
+    interval,
+    startTime,
+    endTime
+  );
 
   if (!candles.length) return undefined;
 
