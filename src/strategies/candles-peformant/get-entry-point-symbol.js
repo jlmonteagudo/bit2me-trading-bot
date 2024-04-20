@@ -1,12 +1,13 @@
 import { logger } from '../../bot/core/logger.js';
-import { config } from './config.js';
 import * as candleDomain from '../../bot/domains/candle/index.js';
+import * as config from './config.js';
 
 export const getEntryPositionSymbol = async () => {
-  const symbols = config.symbols;
+  const strategyConfig = config.getConfig();
+  const symbols = strategyConfig.symbols;
   const endTime = new Date().getTime();
   const intervalMilliseconds =
-    config.candleInterval * config.numberOfCandles * 60 * 1000;
+    strategyConfig.candleInterval * strategyConfig.numberOfCandles * 60 * 1000;
   const startTime = endTime - intervalMilliseconds;
 
   logger.info(`Symbols: ${symbols.join(',')}`);
@@ -14,7 +15,7 @@ export const getEntryPositionSymbol = async () => {
   const mostPerformantSymbol =
     await candleDomain.getMostPerformantSymbolByCandles(
       symbols,
-      config.candleInterval,
+      strategyConfig.candleInterval,
       startTime,
       endTime
     );

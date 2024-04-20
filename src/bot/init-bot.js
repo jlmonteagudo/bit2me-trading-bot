@@ -2,8 +2,34 @@ import { logger } from './core/logger.js';
 import * as positionDomain from './domains/position/index.js';
 import * as database from './database/index.js';
 import * as connector from '../conector/bit2me.js';
+import * as firebase from './firebase/index.js';
+import { BotStatusEnum } from './core/enums/bot-status.enum.js';
+
+let intervalId;
 
 database.setup();
+
+export const initBot = (strategy) => {
+  firebase.botConfig.on('value', (config) => {
+    const botConfig = config.val();
+    logger.info(`Bot status: ${botConfig.status}`);
+
+    if (intervalId) stopBot();
+    if (botConfig.status === BotStatusEnum.On) startBot(botConfig, strategy);
+  });
+};
+
+const startBot = (botConfig, strategy) => {
+  logger.info('Starting the bot');
+  startCycle(strategy);
+  intervalId = setInterval(startCycle, botConfig.cycleInterval, strategy);
+};
+
+const stopBot = () => {
+  logger.info('The bot is stopped');
+  if (intervalId) clearInterval(intervalId);
+  intervalId = undefined;
+};
 
 const startCycle = async (strategy) => {
   logger.info('Start new cycle...');
@@ -17,7 +43,7 @@ const startCycle = async (strategy) => {
 
       if (['open', 'inactive'].includes(exitOrder.status)) {
         await strategy.checkTrailingStopLoss(
-          strategy.config.stopLossPercentage
+          strategy.getConfig().stopLossPercentage
         );
         return;
       } else {
@@ -33,8 +59,8 @@ const startCycle = async (strategy) => {
       logger.info(`Opening a new position for ${entryPositionSymbol}`);
       await positionDomain.createPosition(
         entryPositionSymbol,
-        strategy.config.stopLossPercentage,
-        strategy.config.quoteOrderAmount
+        strategy.getConfig().stopLossPercentage,
+        strategy.getConfig().quoteOrderAmount
       );
     } else {
       logger.info(`No opportunities found`);
@@ -44,10 +70,4 @@ const startCycle = async (strategy) => {
   }
 
   logger.info('End cycle\n');
-};
-
-export const startBot = (strategy) => {
-  logger.info('Starting the bot');
-  startCycle(strategy);
-  setInterval(startCycle, strategy.config.cycleInterval, strategy);
 };

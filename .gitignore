@@ -43,3 +43,5 @@ Thumbs.db
 .env
 
 src/bot/database/database.sqlite
+
+/certs

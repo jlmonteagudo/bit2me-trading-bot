@@ -1,20 +1,7 @@
-export const config = {
-  production: false,
-  cycleInterval: 3000,
-  candleInterval: 5,
-  numberOfCandles: 300,
-  stopLossPercentage: 0.25,
-  symbols: [
-    // 'ETH/USDT',
-    'TON/USDT',
-    // 'BCH/USDT',
-    // 'SOL/USDT',
-    'DOGE/USDT',
-    // 'ADA/USDT',
-    // 'SHIB/USDT',
-    // 'DOT/USDT',
-    'ICP/USDT',
-    'WLD/USDT',
-    'LAI/USDT',
-  ],
+let config = undefined;
+
+export const setConfig = (value) => {
+  config = value;
 };
+
+export const getConfig = () => config;
