@@ -1,68 +1,56 @@
-import { database } from '../../../database/index.js';
+import * as firebase from '../../../firebase/index.js';
 
-export const getCountOpenPositions = () => {
-  const query = database.prepare(
-    `SELECT count(*) as count FROM positions WHERE status='open';`
+export const getCountOpenPositions = async () => {
+  const positions = await firebase.positions
+    .orderByChild('status')
+    .equalTo('open')
+    .once('value');
+
+  return positions.numChildren();
+};
+
+export const getOpenPosition = async () => {
+  const positionsSnapshot = await firebase.positions
+    .orderByChild('status')
+    .equalTo('open')
+    .once('value');
+
+  let positions = positionsSnapshot.val();
+
+  if (!positions) return null;
+
+  positions = Object.keys(positions).map((key) => ({
+    id: key,
+    ...positions[key],
+  }));
+
+  return positions[0];
+};
+
+export const insertPosition = async (position) => {
+  const result = firebase.positions.push(position);
+  return result.key;
+};
+
+export const updatePosition = async (position) => {
+  let updateData = {
+    exitOrderId: position.exitOrderId,
+    exitPrice: position.exitPrice,
+    status: position.status,
+    exitPrice: position.exitPrice,
+    exitQuoteAmount: position.exitQuoteAmount,
+    profit: position.profit,
+    exitDatetime: position.exitDatetime,
+  };
+
+  updateData = removeUndefinedValues(updateData);
+
+  return firebase.positions.child(position.id).update(updateData);
+};
+
+const removeUndefinedValues = (position) => {
+  Object.keys(position).forEach(
+    (key) => !position[key] && delete position[key]
   );
-
-  const result = query.get();
-  return result.count;
-};
-
-export const getOpenPosition = () => {
-  const query = database.prepare(
-    `SELECT * FROM positions WHERE status='open';`
-  );
-
-  return query.get();
-};
-
-export const insertPosition = (position) => {
-  const insert = database.prepare(`INSERT INTO positions (
-    symbol,
-    status,
-    entryOrderId,
-    exitOrderId,
-    positionBaseAmount,
-    entryPrice,
-    exitPrice,
-    entryQuoteAmount,
-    exitQuoteAmount,
-    profit,
-    entryDatetime,
-    exitDatetime
-  ) VALUES (
-    @symbol,
-    @status,
-    @entryOrderId,
-    @exitOrderId,
-    @positionBaseAmount,
-    @entryPrice,
-    @exitPrice,
-    @entryQuoteAmount,
-    @exitQuoteAmount,
-    @profit,
-    @entryDatetime,
-    @exitDatetime
-  )`);
-
-  return insert.run(position);
-};
-
-export const updatePosition = (position) => {
-  const update = database.prepare(`
-    UPDATE positions
-    SET
-    exitOrderId = @exitOrderId,
-    exitPrice = @exitPrice,
-    status = @status,
-    exitPrice = @exitPrice,
-    exitQuoteAmount = @exitQuoteAmount,
-    profit = @profit,
-    exitDatetime = @exitDatetime
-    WHERE
-    id = @id
-  `);
-
-  return update.run(position);
+  return position;
 };

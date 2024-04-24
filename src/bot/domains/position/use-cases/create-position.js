@@ -50,8 +50,8 @@ const insertPosition = async (entryOrder, exitOrder) => {
     entryPrice: entryOrder.price,
     exitPrice: exitOrder.price,
     entryQuoteAmount: entryOrder.cost,
-    exitQuoteAmount: undefined,
-    profit: undefined,
+    exitQuoteAmount: null,
+    profit: null,
     entryDatetime: new Date(entryOrder.updatedAt).getTime(),
     exitDatetime: new Date(exitOrder.updatedAt).getTime(),
   };

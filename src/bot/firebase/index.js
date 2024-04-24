@@ -12,5 +12,7 @@ export const botConfig = db.ref('bot');
 
 export const strategy = (strategyId) => db.ref(`strategies/${strategyId}`);
 
+export const positions = db.ref('positions');
+
 export const serializeSymbols = (symbols) =>
   Object.keys(symbols).map((symbol) => symbol.replace('-', '/'));
