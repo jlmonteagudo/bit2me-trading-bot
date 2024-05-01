@@ -1,4 +1,4 @@
-import { logger } from './core/logger.js';
+import { logger } from './core/log/logger.js';
 import * as positionDomain from './domains/position/index.js';
 import * as database from './database/index.js';
 import * as connector from '../conector/bit2me.js';

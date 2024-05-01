@@ -1,4 +1,4 @@
-import { logger } from '../../../core/logger.js';
+import { logger } from '../../../core/log/logger.js';
 import * as repository from '../repository/position.repository.js';
 
 export const updatePosition = async (position) => {

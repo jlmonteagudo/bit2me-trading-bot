@@ -1,4 +1,4 @@
-import { logger } from '../../bot/core/logger.js';
+import { logger } from '../../bot/core/log/logger.js';
 import * as positionDomain from '../../bot/domains/position/index.js';
 import * as connector from '../../conector/bit2me.js';
 import { truncateFloat } from '../../bot/domains/position/utils.js';

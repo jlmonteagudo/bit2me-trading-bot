@@ -1,5 +1,5 @@
 import * as connector from '../../../../conector/bit2me.js';
-import { logger } from '../../../core/logger.js';
+import { logger } from '../../../core/log/logger.js';
 import { getAmountBasedOnQuoteBalance, getMaxPriceOfTrades } from '../utils.js';
 import { PositionStatus } from '../enums/position-status.enum.js';
 import * as repository from '../repository/position.repository.js';

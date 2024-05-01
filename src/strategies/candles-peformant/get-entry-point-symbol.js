@@ -1,4 +1,4 @@
-import { logger } from '../../bot/core/logger.js';
+import { logger } from '../../bot/core/log/logger.js';
 import * as candleDomain from '../../bot/domains/candle/index.js';
 import * as config from './config.js';
 

@@ -1,5 +1,6 @@
-import { logger } from '../../../core/logger.js';
+import { logger } from '../../../core/log/logger.js';
 import * as connector from '../../../../conector/bit2me.js';
+import * as firebaseLogger from '../../../core/log/firebase-logger.js';
 import { CandleEnum } from '../enums/candle.enum.js';
 import { getPercentagePriceVariation } from '../utils.js';
 
@@ -13,13 +14,15 @@ export const getMostPerformantSymbolByCandles = async (
     getCandleIntervalSummary(symbol, interval, startTime, endTime)
   );
 
-  const candleIntervalSummaries = await Promise.all(promises);
+  const candleIntervalSummaries = (await Promise.all(promises)).filter(
+    (summary) => !!summary
+  );
 
   logCandleIntervalSummaries(candleIntervalSummaries);
 
-  const positiveCandleIntervalSummaries = candleIntervalSummaries
-    .filter((summary) => !!summary)
-    .filter((summary) => summary.areAllCandlesPositive);
+  const positiveCandleIntervalSummaries = candleIntervalSummaries.filter(
+    (summary) => summary.areAllCandlesPositive
+  );
 
   if (positiveCandleIntervalSummaries.length <= 0) return undefined;
 
@@ -81,4 +84,6 @@ const logCandleIntervalSummaries = (candleIntervalSummaries) => {
   candleIntervalSummaries.forEach((summary) =>
     logger.info(JSON.stringify(summary))
   );
+
+  firebaseLogger.log('entry-point', JSON.stringify(candleIntervalSummaries));
 };
