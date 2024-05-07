@@ -21,8 +21,13 @@ export const initBot = (strategy) => {
 
 const startBot = (botConfig, strategy) => {
   logger.info('Starting the bot');
-  startCycle(strategy);
-  intervalId = setInterval(startCycle, botConfig.cycleInterval, strategy);
+  startCycle(botConfig, strategy);
+  intervalId = setInterval(
+    startCycle,
+    botConfig.cycleInterval,
+    botConfig,
+    strategy
+  );
 };
 
 const stopBot = () => {
@@ -31,10 +36,12 @@ const stopBot = () => {
   intervalId = undefined;
 };
 
-const startCycle = async (strategy) => {
+const startCycle = async (botConfig, strategy) => {
   logger.info('Start new cycle...');
 
   try {
+    logger.info('Looking for new entry opportunity');
+    const entryPositionSymbol = await strategy.getEntryPositionSymbol();
     const currentPosition = await positionDomain.getOpenPosition();
 
     if (currentPosition) {
@@ -52,8 +59,10 @@ const startCycle = async (strategy) => {
       }
     }
 
-    logger.info('Looking for new entry opportunity');
-    const entryPositionSymbol = await strategy.getEntryPositionSymbol();
+    if (botConfig.manualMode) {
+      logger.warn('Working in manual mode. Exit from cycle');
+      return;
+    }
 
     if (entryPositionSymbol) {
       logger.info(`Opening a new position for ${entryPositionSymbol}`);
