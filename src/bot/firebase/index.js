@@ -17,4 +17,6 @@ export const positions = db.ref('positions');
 export const logs = db.ref('logs');
 
 export const serializeSymbols = (symbols) =>
-  Object.keys(symbols).map((symbol) => symbol.replace('-', '/'));
+  Object.keys(symbols)
+    .filter((symbol) => symbols[symbol])
+    .map((symbol) => symbol.replace('-', '/'));
