@@ -7,12 +7,7 @@ const BASE_PATH = '/v1/trading';
 // const CORS = { cors: ['bit2me-trading.web.app', 'localhost:4200'] };
 const HTTP_OPTIONS = {
   cors: true,
-  region: [
-    'europe-southwest1-a',
-    'europe-southwest1-b',
-    'europe-southwest1-c',
-    'europe-west1-b',
-  ],
+  region: ['europe-west1-b'],
 };
 
 exports.helloWorld = onRequest(HTTP_OPTIONS, (request, response) => {
