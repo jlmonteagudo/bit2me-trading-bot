@@ -5,14 +5,22 @@ const fetch = require('node-fetch');
 const SERVER_URL = 'https://gateway.bit2me.com';
 const BASE_PATH = '/v1/trading';
 // const CORS = { cors: ['bit2me-trading.web.app', 'localhost:4200'] };
-const CORS = { cors: false };
+const HTTP_OPTIONS = {
+  cors: true,
+  region: [
+    'europe-southwest1-a',
+    'europe-southwest1-b',
+    'europe-southwest1-c',
+    'europe-west1-b',
+  ],
+};
 
-exports.helloWorld = onRequest(CORS, (request, response) => {
+exports.helloWorld = onRequest(HTTP_OPTIONS, (request, response) => {
   logger.info('Hello logs!', { structuredData: true });
   response.send('Hello from Firebase!');
 });
 
-exports.candles = onRequest(CORS, async (request, response) => {
+exports.candles = onRequest(HTTP_OPTIONS, async (request, response) => {
   const { symbol, interval, numberOfCandles } = request.query;
   const endTime = getEndTime();
   const startTime = getStartTime(interval, numberOfCandles, endTime);
