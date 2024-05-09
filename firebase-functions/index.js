@@ -4,7 +4,8 @@ const fetch = require('node-fetch');
 
 const SERVER_URL = 'https://gateway.bit2me.com';
 const BASE_PATH = '/v1/trading';
-const CORS = { cors: ['bit2me-trading.web.app', 'localhost:4200'] };
+// const CORS = { cors: ['bit2me-trading.web.app', 'localhost:4200'] };
+const CORS = { cors: false };
 
 exports.helloWorld = onRequest(CORS, (request, response) => {
   logger.info('Hello logs!', { structuredData: true });
