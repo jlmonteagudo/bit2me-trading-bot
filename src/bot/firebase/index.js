@@ -16,6 +16,11 @@ export const positions = db.ref('positions');
 
 export const logs = db.ref('logs');
 
+export const botEvents = {
+  openNewPosition: db.ref('botEvents/openNewPosition'),
+  closeCurrentPosition: db.ref('botEvents/closeCurrentPosition'),
+};
+
 export const serializeSymbols = (symbols) =>
   Object.keys(symbols)
     .filter((symbol) => symbols[symbol])
