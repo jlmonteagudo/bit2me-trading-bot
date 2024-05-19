@@ -1,5 +1,7 @@
 import { logger } from './core/log/logger.js';
 import * as positionDomain from './domains/position/index.js';
+import * as balanceDomain from './domains/balance/index.js';
+import * as tickerDomain from './domains/ticker/index.js';
 import * as database from './database/index.js';
 import * as connector from '../conector/bit2me.js';
 import * as firebase from './firebase/index.js';
@@ -40,6 +42,12 @@ const startCycle = async (botConfig, strategy) => {
   logger.info('Start new cycle...');
 
   try {
+    logger.info('Loading balances');
+    await balanceDomain.loadBalances();
+
+    logger.info('Loading tickers');
+    await tickerDomain.loadTickers();
+
     logger.info('Looking for new entry opportunity');
     const entryPositionSymbol = await strategy.getEntryPositionSymbol();
     const currentPosition = await positionDomain.getOpenPosition();

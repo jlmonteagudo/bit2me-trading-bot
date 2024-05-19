@@ -5,6 +5,7 @@ import { PositionStatus } from '../enums/position-status.enum.js';
 import * as repository from '../repository/position.repository.js';
 import { createEntryOrder } from './create-entry-order.js';
 import { createExitOrder } from './create-exit-order.js';
+import { getBalanceBySymbol } from '../../balance/index.js';
 
 export const createPosition = async (
   symbol,
@@ -18,26 +19,30 @@ export const createPosition = async (
 
   const [baseCurrency, quoteCurrency] = symbol.split('/');
   const quoteBalance =
-    quoteOrderAmount ?? (await connector.getBalance(quoteCurrency));
+    quoteOrderAmount ?? (await getBalanceBySymbol(quoteCurrency));
   const orderBook = await connector.getOrderBook(symbol);
   const amount = getAmountBasedOnQuoteBalance(quoteBalance, orderBook);
 
   if (amount <= 0) return;
 
-  const entryOrder = await createEntryOrder(market, amount);
-  const entryOrderTrades = await connector.getTradesByOrder(entryOrder.id);
-  const createdEntryOrder = await connector.getOrder(entryOrder.id);
-  const maxPrice = getMaxPriceOfTrades(entryOrderTrades);
-  const exitOrderAmount = await connector.getBalance(baseCurrency);
+  try {
+    const entryOrder = await createEntryOrder(market, amount);
+    const entryOrderTrades = await connector.getTradesByOrder(entryOrder.id);
+    const createdEntryOrder = await connector.getOrder(entryOrder.id);
+    const maxPrice = getMaxPriceOfTrades(entryOrderTrades);
+    const exitOrderAmount = await getBalanceBySymbol(baseCurrency);
 
-  const exitOrder = await createExitOrder(
-    market,
-    exitOrderAmount,
-    maxPrice,
-    stopLossPercentage
-  );
+    const exitOrder = await createExitOrder(
+      market,
+      exitOrderAmount,
+      maxPrice,
+      stopLossPercentage
+    );
 
-  insertPosition(createdEntryOrder, exitOrder);
+    insertPosition(createdEntryOrder, exitOrder);
+  } catch (error) {
+    logger.error('Error creating a new position: ', error.message);
+  }
 };
 
 const insertPosition = async (entryOrder, exitOrder) => {

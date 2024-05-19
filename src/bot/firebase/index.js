@@ -16,6 +16,10 @@ export const positions = db.ref('positions');
 
 export const logs = db.ref('logs');
 
+export const balances = db.ref('balances');
+
+export const tickers = db.ref('tickers');
+
 export const botEvents = {
   openNewPosition: db.ref('botEvents/openNewPosition'),
   closeCurrentPosition: db.ref('botEvents/closeCurrentPosition'),

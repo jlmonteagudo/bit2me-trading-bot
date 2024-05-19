@@ -32,7 +32,14 @@ export const cancelOrder = async (orderId) => {
   return response.data;
 };
 
-export const getBalance = async (symbol) => {
+export const getBalance = async () => {
+  const url = `${BASE_PATH}/wallet/balance`;
+  const requestConfig = getAuthHeaders(url);
+  const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);
+  return response.data;
+};
+
+export const getBalanceBySymbol = async (symbol) => {
   const url = `${BASE_PATH}/wallet/balance?symbols=${symbol}`;
   const requestConfig = getAuthHeaders(url);
   const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);
