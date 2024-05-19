@@ -9,7 +9,9 @@ export const loadBalances = async () => {
 };
 
 export const getBalanceBySymbol = (symbol) => {
-  return balances.find((balance) => balance.currency === symbol);
+  const symbolBalance = balances.find((balance) => balance.currency === symbol);
+  if (!symbolBalance) return 0;
+  return symbolBalance.balance;
 };
 
 const saveBalances = async (balances) => {

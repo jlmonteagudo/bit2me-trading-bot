@@ -41,7 +41,7 @@ export const createPosition = async (
 
     insertPosition(createdEntryOrder, exitOrder);
   } catch (error) {
-    logger.error('Error creating a new position: ', error.message);
+    logger.error('Error creating a new position: ', error);
   }
 };
 
