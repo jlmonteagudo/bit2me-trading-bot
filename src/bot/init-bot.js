@@ -43,10 +43,10 @@ const startCycle = async (botConfig, strategy) => {
 
   try {
     logger.info('Loading balances');
-    await balanceDomain.loadBalances();
+    balanceDomain.loadBalances();
 
     logger.info('Loading tickers');
-    await tickerDomain.loadTickers();
+    tickerDomain.loadTickers();
 
     logger.info('Looking for new entry opportunity');
     const entryPositionSymbol = await strategy.getEntryPositionSymbol();
@@ -74,11 +74,14 @@ const startCycle = async (botConfig, strategy) => {
 
     if (entryPositionSymbol) {
       logger.info(`Opening a new position for ${entryPositionSymbol}`);
+
       await positionDomain.createPosition(
         entryPositionSymbol,
         strategy.getConfig().stopLossPercentage,
         strategy.getConfig().quoteOrderAmount
       );
+
+      balanceDomain.loadBalances();
     } else {
       logger.info(`No opportunities found`);
     }

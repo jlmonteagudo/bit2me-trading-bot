@@ -8,12 +8,6 @@ export const loadBalances = async () => {
   await saveBalances(balances);
 };
 
-export const getBalanceBySymbol = (symbol) => {
-  const symbolBalance = balances.find((balance) => balance.currency === symbol);
-  if (!symbolBalance) return 0;
-  return symbolBalance.balance;
-};
-
 const saveBalances = async (balances) => {
   return firebase.balances.set(JSON.stringify(balances));
 };

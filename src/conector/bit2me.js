@@ -39,7 +39,7 @@ export const getBalance = async () => {
   return response.data;
 };
 
-export const getBalanceBySymbol = async (symbol) => {
+export const getBalanceByCurrency = async (symbol) => {
   const url = `${BASE_PATH}/wallet/balance?symbols=${symbol}`;
   const requestConfig = getAuthHeaders(url);
   const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);

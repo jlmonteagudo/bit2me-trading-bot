@@ -5,7 +5,6 @@ import { PositionStatus } from '../enums/position-status.enum.js';
 import * as repository from '../repository/position.repository.js';
 import { createEntryOrder } from './create-entry-order.js';
 import { createExitOrder } from './create-exit-order.js';
-import { getBalanceBySymbol } from '../../balance/index.js';
 
 export const createPosition = async (
   symbol,
@@ -19,30 +18,39 @@ export const createPosition = async (
 
   const [baseCurrency, quoteCurrency] = symbol.split('/');
   const quoteBalance =
-    quoteOrderAmount ?? (await getBalanceBySymbol(quoteCurrency));
+    quoteOrderAmount ?? (await connector.getBalanceByCurrency(quoteCurrency));
   const orderBook = await connector.getOrderBook(symbol);
   const amount = getAmountBasedOnQuoteBalance(quoteBalance, orderBook);
 
   if (amount <= 0) return;
 
-  try {
-    const entryOrder = await createEntryOrder(market, amount);
-    const entryOrderTrades = await connector.getTradesByOrder(entryOrder.id);
-    const createdEntryOrder = await connector.getOrder(entryOrder.id);
-    const maxPrice = getMaxPriceOfTrades(entryOrderTrades);
-    const exitOrderAmount = await getBalanceBySymbol(baseCurrency);
+  // try {
+  console.log({ quoteBalance });
+  console.log({ amount });
+  const entryOrder = await createEntryOrder(market, amount);
+  console.log({ entryOrder });
+  const entryOrderTrades = await connector.getTradesByOrder(entryOrder.id);
+  console.log({ entryOrderTrades });
+  const createdEntryOrder = await connector.getOrder(entryOrder.id);
+  console.log({ createdEntryOrder });
+  const maxPrice = getMaxPriceOfTrades(entryOrderTrades);
+  console.log({ maxPrice });
+  const exitOrderAmount = await connector.getBalanceByCurrency(baseCurrency);
+  console.log({ baseCurrency, exitOrderAmount });
 
-    const exitOrder = await createExitOrder(
-      market,
-      exitOrderAmount,
-      maxPrice,
-      stopLossPercentage
-    );
+  const exitOrder = await createExitOrder(
+    market,
+    exitOrderAmount,
+    maxPrice,
+    stopLossPercentage
+  );
 
-    insertPosition(createdEntryOrder, exitOrder);
-  } catch (error) {
-    logger.error('Error creating a new position: ', error);
-  }
+  console.log({ exitOrder });
+
+  insertPosition(createdEntryOrder, exitOrder);
+  // } catch (error) {
+  //   logger.error('Error creating a new position: ', error);
+  // }
 };
 
 const insertPosition = async (entryOrder, exitOrder) => {
