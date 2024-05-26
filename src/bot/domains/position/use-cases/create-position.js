@@ -24,33 +24,24 @@ export const createPosition = async (
 
   if (amount <= 0) return;
 
-  // try {
-  console.log({ quoteBalance });
-  console.log({ amount });
-  const entryOrder = await createEntryOrder(market, amount);
-  console.log({ entryOrder });
-  const entryOrderTrades = await connector.getTradesByOrder(entryOrder.id);
-  console.log({ entryOrderTrades });
-  const createdEntryOrder = await connector.getOrder(entryOrder.id);
-  console.log({ createdEntryOrder });
-  const maxPrice = getMaxPriceOfTrades(entryOrderTrades);
-  console.log({ maxPrice });
-  const exitOrderAmount = await connector.getBalanceByCurrency(baseCurrency);
-  console.log({ baseCurrency, exitOrderAmount });
+  try {
+    const entryOrder = await createEntryOrder(market, amount);
+    const entryOrderTrades = await connector.getTradesByOrder(entryOrder.id);
+    const createdEntryOrder = await connector.getOrder(entryOrder.id);
+    const maxPrice = getMaxPriceOfTrades(entryOrderTrades);
+    const exitOrderAmount = await connector.getBalanceByCurrency(baseCurrency);
 
-  const exitOrder = await createExitOrder(
-    market,
-    exitOrderAmount,
-    maxPrice,
-    stopLossPercentage
-  );
+    const exitOrder = await createExitOrder(
+      market,
+      exitOrderAmount,
+      maxPrice,
+      stopLossPercentage
+    );
 
-  console.log({ exitOrder });
-
-  insertPosition(createdEntryOrder, exitOrder);
-  // } catch (error) {
-  //   logger.error('Error creating a new position: ', error);
-  // }
+    insertPosition(createdEntryOrder, exitOrder);
+  } catch (error) {
+    logger.error('Error creating a new position: ', error);
+  }
 };
 
 const insertPosition = async (entryOrder, exitOrder) => {
@@ -61,7 +52,7 @@ const insertPosition = async (entryOrder, exitOrder) => {
     exitOrderId: exitOrder.id,
     positionBaseAmount: entryOrder.orderAmount,
     entryPrice: entryOrder.price,
-    exitPrice: exitOrder.price,
+    exitPrice: exitOrder.stopPrice,
     entryQuoteAmount: entryOrder.cost,
     exitQuoteAmount: null,
     profit: null,

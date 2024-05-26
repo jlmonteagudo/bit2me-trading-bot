@@ -38,7 +38,7 @@ export const checkTrailingStopLoss = async (stopLossPercentage) => {
     );
 
     position.exitOrderId = newExitOrder.id;
-    position.exitPrice = newExitOrder.price;
+    position.exitPrice = newExitOrder.stopPrice;
 
     positionDomain.updatePosition(position);
   }

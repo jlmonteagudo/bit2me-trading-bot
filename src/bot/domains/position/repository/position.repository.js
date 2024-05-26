@@ -35,7 +35,6 @@ export const insertPosition = async (position) => {
 export const updatePosition = async (position) => {
   let updateData = {
     exitOrderId: position.exitOrderId,
-    exitPrice: position.exitPrice,
     status: position.status,
     exitPrice: position.exitPrice,
     exitQuoteAmount: position.exitQuoteAmount,
