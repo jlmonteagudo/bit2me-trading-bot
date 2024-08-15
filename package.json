@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon src/index",
+    "start": "nodemon src/manual-order-book-analysis",
+    "start:prod": "node src/manual-order-book-analysis",
     "test": "node --test",
     "test:watch": "node --test --watch"
   },
@@ -17,9 +18,9 @@
   },
   "dependencies": {
     "axios": "^1.6.8",
-    "better-sqlite3": "^9.4.3",
     "dotenv": "^16.4.5",
     "firebase-admin": "^12.1.0",
-    "winston": "^3.13.0"
+    "winston": "^3.13.0",
+    "ws": "^8.18.0"
   }
 }
