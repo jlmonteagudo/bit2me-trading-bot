@@ -1,0 +1,7 @@
+# DEPLOYMENT
+
+- Develop a new feature
+- Build a new image: `docker build -t bit2me-trading-bot:1.0.0 .`
+- Tag the image: `docker tag bit2me-trading-bot:1.0.0 registry.digitalocean.com/monteagudo/bit2me-trading-bot:1.0.0`
+- Test the image in local: `docker run -p 8081:8080 registry.digitalocean.com/monteagudo/bit2me-trading-bot:1.0.0`
+- Push the image in Digital Ocean Registry: `docker push registry.digitalocean.com/monteagudo/bit2me-trading-bot:1.0.0`
