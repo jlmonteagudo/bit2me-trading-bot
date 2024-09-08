@@ -1,3 +1,16 @@
+NEW VERSION
+
+- En el front, a título orientativo hay que poner el precio actual, el precio stop loss, el precio take profit. Junto al precio stop loss y take profit hay que poner la distancia con respecto al precio actual. Esta información se indicará tanto para posiciones abiertas como para posiciones cerradas.
+
+- En la base de datos se tiene que almacenar (manualmente, más adelante se hará una pantalla de settings) cuánto estamos dispuestos a ganar y cuánto estamos dispuestos a perder. Por ejemplo, con respecto al precio de bitcoin, 250 euros de ganancia y 500 euros de pérdidas. Esta información serán settings de la estrategia. UPDATE: las ganancias y pérdidas tienen que ser mucho menores, porque en el caso de las ganancias se va a ir haciendo trailing stop loss. Por ejemplo, ganancia 50 euros, pérdidas 300 euros.
+
+- Cuando se cree una orden, en base a la configuración de ganancias y pérdidas se almacenará un campo que nos indique el precio del stop loss y el precio del take profit. Se creará una orden stop loss en el exchange. El take profit se puede hacer manual, es decir, el usuario es quién cierra la posición manualmente. Pero, cuando el precio alcance el precio del take profit, entonces se cancelará la orden stop loss, y se creará una nueva con un precio stop loss un poco inferior al precio del take profit. Si el precio sigue subiendo, entonces se irá haciendo un trailing stop loss utilizando un valor absoluto que estará configurado en los settings. Para gestionarlo, podremos tener un campo en la posición que nos indique si estamos en modo trailing stop loss, y si estamos en trailing stop loss entonces  iremos creando nuevas órdenes stop limit utilizando el valor absoluto que incrementa las órdenes stop loss (pueden ser 20, 30 ó 50  euros respecto al precio del bitcoin, hay que analizarlo).
+
+- Si se cierra una posición manualmente, hay que tener en cuenta que antes hay que cancelar la orden stop loss.
+
+---
+
+
 Implementar métodos de salida globales (válidas para cualquier estrategia). La
 estrategia decide si activa la validación de estos métodos de salida.
 
