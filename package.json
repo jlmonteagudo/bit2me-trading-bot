@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon src/manual-order-book-analysis",
-    "start:prod": "node src/manual-order-book-analysis",
+    "start": "nodemon src/index",
+    "start:prod": "node src/index",
     "test": "node --test",
     "test:watch": "node --test --watch"
   },
