@@ -1,4 +1,11 @@
-export const getAmountBasedOnQuoteBalance = (balance, orderBook) => {
+import * as connector from '../../../conector/bit2me.js';
+import { getMarket } from '../../markets/index.js';
+import { truncateFloat } from '../../../core/util/math.js';
+
+export const getAmountBasedOnQuoteBalance = async (symbol, balance) => {
+  const market = await getMarket(symbol);
+  const orderBook = await connector.getOrderBook(symbol);
+
   let amount = 0;
   let remainingBalance = balance;
 
@@ -12,6 +19,8 @@ export const getAmountBasedOnQuoteBalance = (balance, orderBook) => {
       break;
     }
   }
+
+  amount = truncateFloat(amount, market.amountPrecision);
 
   return amount;
 };

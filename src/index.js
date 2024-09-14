@@ -6,7 +6,6 @@ import * as websocketClient from './websockets/client.js';
 import * as websocketServer from './websockets/server.js';
 
 firebase.initialize();
-settings.initialize();
 listeners.initialize();
 
 websocketServer.listen();

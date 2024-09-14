@@ -1,9 +1,6 @@
 import { logger } from '../../../core/logger/logger.js';
-import * as connector from '../../../conector/bit2me.js';
-import { getMarket } from '../../markets/index.js';
 import { getSettings } from '../../settings/index.js';
 import * as repository from '../repository/positions.repository.js';
-import { truncateFloat } from '../../../core/util/math.js';
 import { getAmountBasedOnQuoteBalance } from '../../order-book/index.js';
 
 export const createPosition = async (
@@ -12,11 +9,7 @@ export const createPosition = async (
 ) => {
   logger.info(`Creating a new simulation position for ${symbol}`);
 
-  const market = await getMarket(symbol);
-  const orderBook = await connector.getOrderBook(symbol);
-
-  let amount = getAmountBasedOnQuoteBalance(quoteOrderAmount, orderBook);
-  amount = truncateFloat(amount, market.amountPrecision);
+  const amount = await getAmountBasedOnQuoteBalance(symbol, quoteOrderAmount);
 
   const createdOrder = {
     symbol,

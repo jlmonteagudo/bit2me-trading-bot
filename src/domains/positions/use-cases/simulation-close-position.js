@@ -1,5 +1,4 @@
 import { logger } from '../../../core/logger/logger.js';
-import * as connector from '../../../conector/bit2me.js';
 import { getMarket } from '../../markets/index.js';
 import { getSettings } from '../../settings/index.js';
 import { getSellQuote } from '../../order-book/index.js';
@@ -11,13 +10,8 @@ export const closePosition = async (id) => {
 
   const settings = getSettings();
   const position = await repository.getPosition(id, true);
-
-  const orderBook = await connector.getOrderBook(position.symbol);
-  let sellQuote = getSellQuote(position.baseAmount, orderBook);
-
   const market = await getMarket(position.symbol);
-  sellQuote = truncateFloat(sellQuote, market.pricePrecision);
-
+  const sellQuote = await getSellQuote(position.baseAmount, orderBook);
   const quoteFeeAmount = settings.feePercentage * sellQuote / 100;
 
   position.exitAveragePrice = sellQuote / position.baseAmount;
