@@ -2,6 +2,7 @@ import { logger } from '../../../core/logger/logger.js';
 import { getSettings } from '../../settings/index.js';
 import * as repository from '../repository/positions.repository.js';
 import { getAmountBasedOnQuoteBalance } from '../../order-book/index.js';
+import * as positionsState from '../state/positions.state.js';
 
 export const createPosition = async (
   symbol,
@@ -19,7 +20,8 @@ export const createPosition = async (
   };
 
   const position = await getPositionToCreate(createdOrder);
-  await repository.createPosition(position, true);
+  const createdPostion = await repository.createPosition(position, true);
+  positionsState.setCurrentPosition(createdPostion);
 
   logger.info(`New position created ${JSON.stringify(position)}`);
 };
