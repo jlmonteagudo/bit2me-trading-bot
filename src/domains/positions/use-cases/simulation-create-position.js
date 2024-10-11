@@ -27,10 +27,11 @@ export const createPosition = async (
 };
 
 const getPositionToCreate = async (order) => {
-  const settings = getSettings();
-
+  const settings = getSettings(true);
   const baseFeeAmount = settings.feePercentage * order.orderAmount / 100;
   const quoteFeeAmount = settings.feePercentage * order.cost / 100;
+  const takeProfitCost = order.cost * (1 + settings.initialTakeProfitPercentage / 100);
+  const stopLossCost = order.cost * (1 - settings.initialStopLossPercentage / 100);
 
   const position = {
     symbol: order.symbol,
@@ -45,6 +46,8 @@ const getPositionToCreate = async (order) => {
     feePercentage: settings.feePercentage,
     baseFeeAmount,
     entryQuoteFeeAmount: quoteFeeAmount,
+    stopLossCost,
+    takeProfitCost
   };
 
   return position;

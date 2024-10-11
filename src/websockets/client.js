@@ -1,6 +1,8 @@
 import { logger } from '../core/logger/logger.js';
 import WebSocket from 'ws';
 import * as websocketServer from './server.js';
+import { websocketDataEventEmitter } from '../core/events/event-emitters.js';
+import { Events } from '../core/events/events.js';
 
 export const connect = () => {
   const ws = new WebSocket('wss://ws.bit2me.com/v1/trading');
@@ -17,6 +19,7 @@ export const connect = () => {
 
   ws.on('message', (data) => {
     websocketServer.broadcast(data);
+    websocketDataEventEmitter.emit(Events.WebsocketDataReceived, data);
   });
 
   ws.on('error', (err) => {

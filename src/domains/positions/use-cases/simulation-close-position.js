@@ -5,14 +5,16 @@ import { getSellQuote } from '../../order-book/index.js';
 import { truncateFloat } from '../../../core/util/math.js';
 import * as repository from '../repository/positions.repository.js';
 import * as positionsState from '../state/positions.state.js';
+import * as connector from '../../../conector/bit2me.js';
 
 export const closePosition = async (id) => {
   logger.info(`Closing the position ${id}`);
 
-  const settings = getSettings();
+  const settings = getSettings(true);
   const position = await repository.getPosition(id, true);
   const market = await getMarket(position.symbol);
-  const sellQuote = await getSellQuote(position.symbol, position.baseAmount);
+  const orderBook = await connector.getOrderBook(position.symbol);
+  const sellQuote = await getSellQuote(position.symbol, position.baseAmount, orderBook);
   const quoteFeeAmount = settings.feePercentage * sellQuote / 100;
 
   position.exitAveragePrice = sellQuote / position.baseAmount;

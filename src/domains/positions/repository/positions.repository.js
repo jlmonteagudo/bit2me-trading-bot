@@ -20,6 +20,7 @@ export const createPosition = async (position, isSimulation) => {
 
 export const getPosition = async (id, isSimulation) => {
   const path = getPositionsPath(isSimulation);
+
   const positionSnapshot = await db.ref(path).child(id).get();
   return {
     id,
@@ -44,11 +45,16 @@ export const getCurrentPosition = async (isSimulation) => {
 export const updatePosition = async (position, isSimulation) => {
   const path = getPositionsPath(isSimulation);
 
-  await db.ref(path).child(position.id).update({
+
+  const update = {
     exitAveragePrice: position.exitAveragePrice,
     exitQuoteAmount: position.exitQuoteAmount,
     profit: position.profit,
-    exitAt: position.exitAt,
-    status: position.status
-  });
+    ...(position.exitAt !== undefined && { exitAt: position.exitAt }),
+    status: position.status,
+    takeProfitCost: position.takeProfitCost,
+    stopLossCost: position.stopLossCost
+  }
+
+  await db.ref(path).child(position.id).update(update);
 };
