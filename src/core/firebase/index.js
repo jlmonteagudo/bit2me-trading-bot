@@ -18,6 +18,8 @@ export const DB_PATH = '/manual-trading';
 
 export let db;
 
+export let messaging;
+
 export const initialize = () => {
 
   admin.initializeApp({
@@ -26,4 +28,6 @@ export const initialize = () => {
   });
 
   db = admin.database();
+
+  messaging = admin.messaging();
 };
