@@ -3,6 +3,8 @@ import { getSettings } from '../../settings/index.js';
 import * as repository from '../repository/positions.repository.js';
 import { getAmountBasedOnQuoteBalance } from '../../order-book/index.js';
 import * as positionsState from '../state/positions.state.js';
+import { newPositionOpenEventEmitter } from '../../../core/events/event-emitters.js';
+import { Events } from '../../../core/events/events.js';
 
 export const createPosition = async (
   symbol,
@@ -22,6 +24,7 @@ export const createPosition = async (
   const position = await getPositionToCreate(createdOrder);
   const createdPostion = await repository.createPosition(position, true);
   positionsState.setCurrentPosition(createdPostion);
+  newPositionOpenEventEmitter.emit(Events.NewPositionOpen, createdOrder);
 
   logger.info(`New position created ${JSON.stringify(position)}`);
 };

@@ -5,6 +5,8 @@ export const websocketDataEventEmitter = new EventEmitter();
 
 export const orderBookEventEmitter = new EventEmitter();
 
+export const newPositionOpenEventEmitter = new EventEmitter();
+
 websocketDataEventEmitter.on(Events.WebsocketDataReceived, (data) => {
   const parsedData = JSON.parse(data.toString('utf-8'));
   if (parsedData.event === Events.OrderBookReceived)

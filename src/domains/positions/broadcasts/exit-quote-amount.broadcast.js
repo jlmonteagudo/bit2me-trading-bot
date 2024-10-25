@@ -7,5 +7,4 @@ export const broadcastExitQuoteAmount = (exitQuoteAmount) => {
   });
 
   websocketServer.broadcast(exitQuoteAmountMessage);
-
 };
