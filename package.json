@@ -8,7 +8,8 @@
     "start": "nodemon src/index",
     "start:prod": "node src/index",
     "test": "node --test",
-    "test:watch": "node --test --watch"
+    "test:watch": "node --test --watch",
+    "deploy-functions": "firebase deploy --only functions"
   },
   "keywords": [],
   "author": "",
