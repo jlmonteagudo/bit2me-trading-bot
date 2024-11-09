@@ -1,8 +1,9 @@
 /* eslint-disable max-len */
-const { onRequest } = require('firebase-functions/v2/https');
-const logger = require('firebase-functions/logger');
-const fetch = require('node-fetch');
-const { getMostPerformantMarketsWithCandles } = require('../src/domains/candles/use-cases/get-most-performant-markets-with-candles.js');
+import { onRequest } from 'firebase-functions/v2/https';
+import logger from 'firebase-functions/logger';
+import fetch from 'node-fetch';
+import { getMostPerformantMarketsWithCandles } from '../src/domains/candles/use-cases/get-most-performant-markets-with-candles.js';
+
 
 const SERVER_URL = 'https://gateway.bit2me.com';
 const BASE_PATH = '/v1/trading';
