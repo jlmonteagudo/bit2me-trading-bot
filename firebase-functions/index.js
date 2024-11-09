@@ -1,6 +1,8 @@
+/* eslint-disable max-len */
 const { onRequest } = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const fetch = require('node-fetch');
+const { getMostPerformantMarketsWithCandles } = require('../src/domains/candles/use-cases/get-most-performant-markets-with-candles.js');
 
 const SERVER_URL = 'https://gateway.bit2me.com';
 const BASE_PATH = '/v1/trading';
@@ -12,6 +14,11 @@ const HTTP_OPTIONS = {
 exports.helloWorld = onRequest(HTTP_OPTIONS, (request, response) => {
   logger.info('Hello logs!', { structuredData: true });
   response.send('Hello from Firebase!');
+});
+
+exports.getMostPerformantMarketsWithCandles = onRequest(HTTP_OPTIONS, async (request, response) => {
+  const markets = await getMostPerformantMarketsWithCandles();
+  response.send(markets);
 });
 
 exports.candles = onRequest(HTTP_OPTIONS, async (request, response) => {

@@ -1,3 +1,9 @@
+- Crear una página donde pueda de mis pares FAVORITOS, un gráfico de velas de todos ellos a la vez, para tomar decisión si puedo abrir posición en alguno de ellos. Y si clicko en alguno de ellos, que me abra https://pro-mobile.bit2me.com/charts/SELECTED-PAIR
+
+- Crear una página donde pueda definir mis favoritos. Esto ya estaba en la rama original, así que cogerlo de allí
+
+- He desactivado en candles performance, pero puedo volver a activarlo y que tenga en cuenta todos los pares favoritos.
+
 - Parametrizar el websocket URL en el fichero environment en el front
 
 - Enviar la hora del servidor vía websockets
