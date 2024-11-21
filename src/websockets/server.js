@@ -3,9 +3,9 @@ import { logger } from '../core/logger/logger.js';
 
 let wss;
 
-export const listen = () => {
-  wss = new WebSocketServer({ port: 8080 });
-  logger.info(`Listening on port ${8080}`);
+export const initializeWebSocket = (server) => {
+  wss = new WebSocketServer({ server });
+  logger.info('WebSocket server initialized');
 };
 
 export const broadcast = (message) => {
@@ -14,4 +14,4 @@ export const broadcast = (message) => {
       client.send(message, { binary: false });
     }
   });
-}
+};
