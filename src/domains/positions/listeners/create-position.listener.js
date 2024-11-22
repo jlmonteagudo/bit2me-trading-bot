@@ -1,5 +1,5 @@
 import { db, DB_PATH } from '../../../core/firebase/index.js';
-import { createPosition as simulationCreatePosition } from '../use-cases/simulation-create-position.js'
+import { createPosition } from '../use-cases/create-position.js'
 
 const COMMAND_CREATE_POSITION = `${DB_PATH}/commands/createPosition`;
 
@@ -10,7 +10,6 @@ export const listenCreatePosition = () => {
 
     if (!newPosition) return;
 
-    if (newPosition.simulation) await simulationCreatePosition(newPosition.symbol, newPosition.quoteOrderAmount);
-    else throw new Error('Creating a new production position not implemented yet');
+    await createPosition(newPosition.symbol, newPosition.quoteOrderAmount);
   });
 };

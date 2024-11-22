@@ -1,36 +1,28 @@
 import { db, DB_PATH } from '../../../core/firebase/index.js';
 
-const PRODUCTION_POSITIONS_PATH = `${DB_PATH}/production/positions`;
-const SIMULATION_POSITIONS_PATH = `${DB_PATH}/simulation/positions`;
+const POSITIONS_PATH = `${DB_PATH}/positions`;
 
-const getPositionsPath = (isSimulation) => {
-  if (isSimulation) return SIMULATION_POSITIONS_PATH;
-  return PRODUCTION_POSITIONS_PATH;
-}
-
-export const createPosition = async (position, isSimulation) => {
-  const path = getPositionsPath(isSimulation);
-  const ref = db.ref(path).push(position);
+export const createPosition = async (position) => {
+  const ref = db.ref(POSITIONS_PATH).push(position);
   const snapshot = await ref.once('value');
+
   return {
     id: ref.key,
     ...snapshot.val()
   }
 };
 
-export const getPosition = async (id, isSimulation) => {
-  const path = getPositionsPath(isSimulation);
+export const getPosition = async (id) => {
+  const positionSnapshot = await db.ref(POSITIONS_PATH).child(id).get();
 
-  const positionSnapshot = await db.ref(path).child(id).get();
   return {
     id,
     ...positionSnapshot.val()
   }
 };
 
-export const getCurrentPosition = async (isSimulation) => {
-  const path = getPositionsPath(isSimulation);
-  const positionSnapshotPromise = await db.ref(path).orderByChild('status').equalTo('open').get();
+export const getCurrentPosition = async () => {
+  const positionSnapshotPromise = await db.ref(POSITIONS_PATH).orderByChild('status').equalTo('open').get();
   const positionSnapshot = positionSnapshotPromise.val();
 
   if (!positionSnapshot) return null;
@@ -42,19 +34,17 @@ export const getCurrentPosition = async (isSimulation) => {
   return currentPosition;
 };
 
-export const updatePosition = async (position, isSimulation) => {
-  const path = getPositionsPath(isSimulation);
-
-
+export const updatePosition = async (position) => {
   const update = {
     exitAveragePrice: position.exitAveragePrice,
     exitQuoteAmount: position.exitQuoteAmount,
     profit: position.profit,
+    ...(position.profitPercentage !== undefined && { profitPercentage: position.profitPercentage }),
     ...(position.exitAt !== undefined && { exitAt: position.exitAt }),
     status: position.status,
     takeProfitCost: position.takeProfitCost,
     stopLossCost: position.stopLossCost
   }
 
-  await db.ref(path).child(position.id).update(update);
+  await db.ref(POSITIONS_PATH).child(position.id).update(update);
 };

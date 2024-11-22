@@ -1,6 +1,6 @@
 import { db, DB_PATH } from '../../../core/firebase/index.js';
 
-const PERFORMANT_MARKETS_PATH = `${DB_PATH}/simulation/performant-markets`;
+const PERFORMANT_MARKETS_PATH = `${DB_PATH}/performant-markets`;
 
 export const savePerformantMarkets = async (markets) => {
   try {

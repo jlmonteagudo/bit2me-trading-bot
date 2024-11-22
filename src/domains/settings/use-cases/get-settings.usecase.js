@@ -1,12 +1,9 @@
-let productionSettings;
-let simulationSettings;
+let settings;
 
-export const setSettings = (settings, isSimulation) => {
-  if (isSimulation) return simulationSettings = settings;
-  productionSettings = settings;
+export const setSettings = (value) => {
+  settings = value;
 }
 
-export const getSettings = (isSimulation) => {
-  if (isSimulation) return simulationSettings;
-  return productionSettings;
+export const getSettings = () => {
+  return settings;
 }

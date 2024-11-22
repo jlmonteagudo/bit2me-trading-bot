@@ -21,6 +21,8 @@ export const closePosition = async (id) => {
   position.exitQuoteAmount = sellQuote - quoteFeeAmount;
   position.profit = position.exitQuoteAmount - position.entryQuoteAmount;
   position.profit = truncateFloat(position.profit, market.pricePrecision);
+  position.profitPercentage = (position.profit / position.entryQuoteAmount) * 100;
+  position.profitPercentage = truncateFloat(position.profitPercentage, 2);
   position.exitAt = new Date().getTime();
   position.status = 'closed';
   position.exitQuoteFeeAmount = quoteFeeAmount;

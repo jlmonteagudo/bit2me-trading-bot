@@ -10,7 +10,7 @@ export const createPosition = async (
   symbol,
   quoteOrderAmount,
 ) => {
-  logger.info(`Creating a new simulation position for ${symbol}`);
+  logger.info(`Creating a new position for ${symbol}`);
 
   if (quoteOrderAmount <= 0) {
     logger.error(`Quote order amount can't be less than or equal to 0`);

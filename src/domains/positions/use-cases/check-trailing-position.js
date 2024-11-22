@@ -2,7 +2,7 @@ import { getCurrentPosition } from '../state/positions.state.js';
 import { orderBookEventEmitter, Events } from '../../../core/events/index.js';
 import { getSellQuote } from '../../order-book/index.js';
 import { getSettings } from '../../settings/index.js';
-import { closePosition } from './simulation-close-position.js';
+import { closePosition } from './close-position.js';
 import { broadcastExitQuoteAmount } from '../broadcasts/exit-quote-amount.broadcast.js';
 import * as repository from '../repository/positions.repository.js';
 
