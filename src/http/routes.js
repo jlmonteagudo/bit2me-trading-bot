@@ -1,5 +1,5 @@
 import { getCandles } from '../domains/candles/use-cases/get-candles.js';
-import { getMostPerformantMarketsWithCandles } from '../domains/candles/use-cases/get-most-performant-markets-with-candles.js';
+import { getMostPerformantMarketsWithCandles } from '../domains/trading-strategies/get-most-performant-markets-with-candles.js';
 
 export const setupRoutes = (app) => {
   app.get('/', (req, res) => {

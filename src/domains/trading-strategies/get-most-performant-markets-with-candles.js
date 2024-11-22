@@ -1,5 +1,5 @@
-import * as connector from '../../../conector/bit2me.js';
-import { CandleEnum } from '../enums/candle.enum.js';
+import * as connector from '../../conector/bit2me.js';
+import { CandleEnum } from '../candles/enums/candle.enum.js';
 
 const QUOTE_VOLUME_LIMIT = 1_000_000;
 const LIMIT_NUMBER_OF_MARKETS = 10;

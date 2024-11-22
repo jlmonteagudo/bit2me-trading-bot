@@ -11,6 +11,7 @@ export const getAmountBasedOnQuoteBalance = async (symbol, balance) => {
 
   for (const [price, volume] of orderBook.asks) {
     const cost = price * volume;
+
     if (cost <= remainingBalance) {
       amount += volume;
       remainingBalance -= cost;
