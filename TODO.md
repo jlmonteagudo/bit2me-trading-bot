@@ -1,3 +1,13 @@
+- Comprobar que no dé errores y gestionar los errores cuando ocurran
+
+- Si creo una orden para comprar con EUR, pero sólo tengo saldo en USDT entonces da error, pero no se gestionar bien. Hay que validar en front y back que haya saldo suficiente.
+
+- Mostrar en el front un componente al operar con el sado de moneda base y cuota, y un botón MAX para seleccionar todos el saldo disponible a la hora de operar
+
+- Crear una pantalla nueva con información de saldos. En la rama principal está esa rama. Comprobar que en el back también se procesa el balance periódicamente después de ciertas acciones y se almacena en Firebase
+
+---
+
 - Crear una página donde pueda de mis pares FAVORITOS, un gráfico de velas de todos ellos a la vez, para tomar decisión si puedo abrir posición en alguno de ellos. Y si clicko en alguno de ellos, que me abra https://pro-mobile.bit2me.com/charts/SELECTED-PAIR
 
 - Crear una página donde pueda definir mis favoritos. Esto ya estaba en la rama original, así que cogerlo de allí

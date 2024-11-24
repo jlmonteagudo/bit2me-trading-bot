@@ -3,7 +3,7 @@ import { orderBookEventEmitter, Events } from '../../../core/events/index.js';
 import { getSellQuote } from '../../order-book/index.js';
 import { getSettings } from '../../settings/index.js';
 import { closePosition } from './close-position.js';
-import { broadcastExitQuoteAmount } from '../broadcasts/exit-quote-amount.broadcast.js';
+import { broadcastExitCost } from '../broadcasts/exit-cost.broadcast.js';
 import * as repository from '../repository/positions.repository.js';
 
 export const checkTrailingPosition = () => {
@@ -16,20 +16,20 @@ const processReceivedOrderBook = async (orderBook) => {
 
   const settings = getSettings(true);
   const sellQuote = await getSellQuote(position.symbol, position.baseAmount, orderBook);
-  const quoteFeeAmount = settings.feePercentage * sellQuote / 100;
-  const exitQuoteAmount = sellQuote - quoteFeeAmount;
+  const feeAmount = position.feePercentage * sellQuote / 100;
+  const exitCost = sellQuote - feeAmount;
 
-  if (exitQuoteAmount < position.stopLossCost) {
+  if (exitCost < position.stopLossCost) {
     closePosition(position.id);
     return;
   }
 
-  if (exitQuoteAmount > position.takeProfitCost) {
-    position.takeProfitCost = exitQuoteAmount * (1 + settings.trailingTakeProfitPercentage / 100);
-    position.stopLossCost = exitQuoteAmount * (1 - settings.trailingStopLossPercentage / 100);
+  if (exitCost > position.takeProfitCost) {
+    position.takeProfitCost = exitCost * (1 + settings.trailingTakeProfitPercentage / 100);
+    position.stopLossCost = exitCost * (1 - settings.trailingStopLossPercentage / 100);
 
     await repository.updatePosition(position, true);
   }
 
-  broadcastExitQuoteAmount(exitQuoteAmount);
+  broadcastExitCost(exitCost);
 };

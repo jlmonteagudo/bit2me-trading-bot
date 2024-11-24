@@ -53,7 +53,8 @@ export const createOrder = async (
   amount,
   price,
   stopPrice,
-  clientOrderId
+  clientOrderId,
+  amountInQuote
 ) => {
   const order = {
     symbol,
@@ -65,6 +66,10 @@ export const createOrder = async (
     clientOrderId,
   };
 
+  if (amountInQuote === true) {
+    order.amountInQuote = amountInQuote;
+  };
+
   const url = `${BASE_PATH}/order`;
   const requestConfig = getAuthHeaders(url, order);
   const response = await axios.post(
@@ -72,6 +77,7 @@ export const createOrder = async (
     order,
     requestConfig
   );
+
   return response.data;
 };
 

@@ -36,8 +36,8 @@ export const getCurrentPosition = async () => {
 
 export const updatePosition = async (position) => {
   const update = {
-    exitAveragePrice: position.exitAveragePrice,
-    exitQuoteAmount: position.exitQuoteAmount,
+    exitPrice: position.exitPrice,
+    exitCost: position.exitCost,
     profit: position.profit,
     ...(position.profitPercentage !== undefined && { profitPercentage: position.profitPercentage }),
     ...(position.exitAt !== undefined && { exitAt: position.exitAt }),
