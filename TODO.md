@@ -1,3 +1,5 @@
+- Que se pueda seleccionar sólo los MOST PERFORMANT MARKETS de EUR, USDT O TODOS (FILTRO EN EL FRONT)
+
 - Comprobar que no dé errores y gestionar los errores cuando ocurran
 
 - Si creo una orden para comprar con EUR, pero sólo tengo saldo en USDT entonces da error, pero no se gestionar bien. Hay que validar en front y back que haya saldo suficiente.

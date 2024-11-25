@@ -1,4 +1,5 @@
 import { logger } from '../../../core/logger/logger.js';
+import { sleep } from '../../../core/util/sleep.js';
 import * as connector from '../../../conector/bit2me.js';
 
 export const getOrderFromExchange = async (orderId, maxRetries) => {
