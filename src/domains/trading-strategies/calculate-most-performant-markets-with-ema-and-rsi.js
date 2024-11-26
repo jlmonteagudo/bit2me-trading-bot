@@ -17,6 +17,7 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   logger.info(`Calculating most performant markets with EMA and RSI for ${tickers.length} tickers`);
 
   for (const ticker of tickers) {
+    logger.info(`Analyzing market ${ticker.symbol}`);
     const candles = await getCandles(ticker.symbol);
     const isPerformant = await isMarketPerformant(candles);
     if (isPerformant) performantTickers.push(ticker);
@@ -25,7 +26,7 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
 
   await savePerformantMarkets(performantTickers);
 
-  logger.info(`Found ${performantTickers.length} performant markets`);
+  logger.info(`Found ${performantTickers.length} performant markets: ${JSON.stringify(performantTickers.map(t => t.symbol))}`);
 };
 
 const isMarketPerformant = async (candles) => {

@@ -9,8 +9,8 @@ const PONG_TIMEOUT = 15000;
 
 let ws = null;
 let pingInterval = null;
+let checkPongInterval = null;
 let lastPongReceived = null;
-let hasToBeConnected = false;
 let lastSymbol = null;
 
 export const connect = (symbol) => {
@@ -23,7 +23,6 @@ export const connect = (symbol) => {
   ws.on('open', () => {
     logger.info(`Connected to websocket server`);
 
-    hasToBeConnected = true;
     lastSymbol = symbol;
 
     ws.send(JSON.stringify({
@@ -37,6 +36,8 @@ export const connect = (symbol) => {
         ws.ping();
       }
     }, PING_INTERVAL);
+
+    checkPongInterval = setInterval(checkPongTimeout, PONG_TIMEOUT);
   });
 
   ws.on('pong', () => {
@@ -53,12 +54,13 @@ export const connect = (symbol) => {
     logger.error(`Websocket client error: ${err.message}`);
     connect();
     clearInterval(pingInterval);
+    clearInterval(checkPongInterval);
   });
 };
 
 export const disconnect = (symbol) => {
-  hasToBeConnected = false;
   clearInterval(pingInterval);
+  clearInterval(checkPongInterval);
 
   ws.send(JSON.stringify({
     'event': 'unsubscribe',
@@ -70,8 +72,6 @@ export const disconnect = (symbol) => {
 };
 
 const checkPongTimeout = () => {
-  if (!hasToBeConnected) return;
-
   const now = new Date().getTime();
   if (now - lastPongReceived > PONG_TIMEOUT) {
     logger.error('Pong timeout');
@@ -79,5 +79,3 @@ const checkPongTimeout = () => {
     connect(lastSymbol);
   }
 };
-
-setInterval(checkPongTimeout, PONG_TIMEOUT);
