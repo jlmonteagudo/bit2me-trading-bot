@@ -4,7 +4,7 @@ import { CandleEnum } from '../enums/candle.enum.js';
 import { messaging } from '../../../core/firebase/index.js';
 import { logger } from '../../../core/logger/logger.js';
 
-const CHECK_INTERVAL_MILISECONDS = 60000;
+const CHECK_INTERVAL_MILISECONDS = 60_000;
 
 export const checkCandlePerformance = () => {
   checkCandlePerformanceInternal();

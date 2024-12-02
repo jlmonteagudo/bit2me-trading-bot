@@ -6,6 +6,7 @@ import * as positionsState from '../state/positions.state.js';
 import { newPositionOpenEventEmitter } from '../../../core/events/event-emitters.js';
 import { Events } from '../../../core/events/events.js';
 import { getOrderFromExchange } from '../../orders/index.js';
+import { loadBalances } from '../../balances/use-cases/load-balances.usecase.js';
 
 export const createPosition = async (
   symbol,
@@ -21,6 +22,7 @@ export const createPosition = async (
     const createdPostion = await repository.createPosition(position, true);
     positionsState.setCurrentPosition(createdPostion);
     newPositionOpenEventEmitter.emit(Events.NewPositionOpen, createdOrder);
+    loadBalances();
 
     logger.info(`New position created ${JSON.stringify(position)}`);
 

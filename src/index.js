@@ -4,16 +4,16 @@ import * as listeners from './listeners.js';
 import { initializeWebSocket } from './websockets/server.js';
 import { listen, getServer } from './http/server.js';
 import { checkTrailingPosition, initializeCurrentPosition } from './domains/positions/index.js';
-// import { checkCandlePerformance } from './domains/candles/use-cases/check-candle-performance.js';
 import { broadcastServerTime } from './websockets/broadcasts/server-time.broadcast.js';
 import { checkMostPerformantMarkets } from './domains/trading-strategies/check-most-performant-markets.js';
+import { watchBalances } from './domains/balances/use-cases/load-balances.usecase.js';
 
 firebase.initialize();
 listeners.initialize();
 
+watchBalances();
 await initializeCurrentPosition();
 checkTrailingPosition();
-// checkCandlePerformance();
 checkMostPerformantMarkets();
 
 initializeWebSocket(getServer());

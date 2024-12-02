@@ -5,6 +5,7 @@ import * as repository from '../repository/positions.repository.js';
 import * as positionsState from '../state/positions.state.js';
 import * as connector from '../../../conector/bit2me.js';
 import { getOrderFromExchange } from '../../orders/index.js';
+import { loadBalances } from '../../balances/use-cases/load-balances.usecase.js';
 
 export const closePosition = async (id) => {
   logger.info(`Closing the position ${id}`);
@@ -39,6 +40,7 @@ export const closePosition = async (id) => {
 
   await repository.updatePosition(position);
   positionsState.setCurrentPosition(null);
+  loadBalances();
 };
 
 const createOrderInExchange = async (symbol, orderAmount) => {
