@@ -1,14 +1,14 @@
-- Mostrar el precio de entrada
+DONE - Mostrar el precio de entrada
 
 - Que se pueda seleccionar sólo los MOST PERFORMANT MARKETS de EUR, USDT O TODOS (FILTRO EN EL FRONT)
 
 - Comprobar que no dé errores y gestionar los errores cuando ocurran
 
-- Si creo una orden para comprar con EUR, pero sólo tengo saldo en USDT entonces da error, pero no se gestionar bien. Hay que validar en front y back que haya saldo suficiente.
+DONE - Si creo una orden para comprar con EUR, pero sólo tengo saldo en USDT entonces da error, pero no se gestionar bien. Hay que validar en front y back que haya saldo suficiente.
 
-- Mostrar en el front un componente al operar con el sado de moneda base y cuota, y un botón MAX para seleccionar todos el saldo disponible a la hora de operar
+DONE - Mostrar en el front un componente al operar con el sado de moneda base y cuota, y un botón MAX para seleccionar todos el saldo disponible a la hora de operar
 
-- Crear una pantalla nueva con información de saldos. En la rama principal está esa rama. Comprobar que en el back también se procesa el balance periódicamente después de ciertas acciones y se almacena en Firebase
+DONE - Crear una pantalla nueva con información de saldos. En la rama principal está esa rama. Comprobar que en el back también se procesa el balance periódicamente después de ciertas acciones y se almacena en Firebase
 
 ---
 
