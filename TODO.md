@@ -1,3 +1,5 @@
+- Mostrar el precio de entrada
+
 - Que se pueda seleccionar sólo los MOST PERFORMANT MARKETS de EUR, USDT O TODOS (FILTRO EN EL FRONT)
 
 - Comprobar que no dé errores y gestionar los errores cuando ocurran
