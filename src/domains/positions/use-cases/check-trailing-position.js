@@ -19,17 +19,19 @@ const processReceivedOrderBook = async (orderBook) => {
   const feeAmount = position.feePercentage * sellQuote / 100;
   const exitCost = sellQuote - feeAmount;
 
-  if (exitCost < position.stopLossCost) {
-    closePosition(position.id);
-    return;
-  }
+  // if (exitCost < position.stopLossCost) {
+  //   closePosition(position.id);
+  //   return;
+  // }
 
-  if (exitCost > position.takeProfitCost) {
-    position.takeProfitCost = exitCost * (1 + settings.trailingTakeProfitPercentage / 100);
-    position.stopLossCost = exitCost * (1 - settings.trailingStopLossPercentage / 100);
+  // if (exitCost > position.takeProfitCost) {
+  //   position.takeProfitCost = exitCost * (1 + settings.trailingTakeProfitPercentage / 100);
+  //   position.stopLossCost = exitCost * (1 - settings.trailingStopLossPercentage / 100);
 
-    await repository.updatePosition(position, true);
-  }
+  //   await repository.updatePosition(position, true);
+  // }
+
+  if (exitCost < position.stopLossCost || exitCost > position.takeProfitCost) closePosition(position.id);
 
   broadcastExitCost(exitCost);
 };
