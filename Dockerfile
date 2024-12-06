@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:22-alpine AS node_app
+FROM node:22-alpine AS node_app
 
 WORKDIR /usr/src/app
 
