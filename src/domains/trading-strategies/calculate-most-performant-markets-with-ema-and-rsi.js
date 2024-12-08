@@ -4,11 +4,10 @@ import { sleep } from '../../core/util/sleep.js';
 import { CandleEnum } from '../candles/enums/candle.enum.js';
 import { ema, rsi } from 'indicatorts';
 import { savePerformantMarkets } from './repository/trading-strategies.repository.js';
+import { getSettings } from '../settings/index.js';
 
-const QUOTE_VOLUME_LIMIT = 1_000_000;
 const CANDLES_INTERVAL = 5;
 const NUMBER_OF_CANDLES = 100;
-const ALLOWED_QUOTES = ['EUR', 'USDT']
 
 export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   const tickers = await getTickers();
@@ -42,14 +41,15 @@ const isMarketPerformant = async (candles) => {
 };
 
 const getTickers = async () => {
+  const settings = getSettings();
   const seenBases = new Set();
 
   return (await connector.getTickers())
     .filter((ticker) => {
       const quote = ticker.symbol.split('/')[1];
-      return ticker.quoteVolume > QUOTE_VOLUME_LIMIT &&
+      return ticker.quoteVolume > settings.quoteVolumeLimit &&
         ticker.percentage > 0 &&
-        ALLOWED_QUOTES.includes(quote);
+        quote === settings.quoteCurrency;
     })
     .sort((a, b) => b.percentage - a.percentage)
     .filter(ticker => {
