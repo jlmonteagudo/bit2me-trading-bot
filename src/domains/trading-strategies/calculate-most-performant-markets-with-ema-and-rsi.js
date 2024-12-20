@@ -29,15 +29,16 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
 };
 
 const isMarketPerformant = async (candles) => {
+  const settings = getSettings();
   const closes = candles.map(candle => candle[CandleEnum.Close]);
-  const ema9 = ema(closes, { period: 9 });
-  const ema21 = ema(closes, { period: 21 });
-  const rsi14 = rsi(closes, { period: 14 });
+  const emaFast = ema(closes, { period: settings.emaFastPeriod });
+  const emaSlow = ema(closes, { period: settings.emaSlowPeriod });
+  const rsiStrategy = rsi(closes, { period: settings.rsiPeriod });
   const lastIndex = closes.length - 1;
-  const isEma9AboveEma21 = ema9[lastIndex] > ema21[lastIndex];
-  const isRsiAbove50 = rsi14[lastIndex] > 50;
+  const isEmaFastAboveEmaSlow = emaFast[lastIndex] > emaSlow[lastIndex];
+  const isRsiAbove50 = rsiStrategy[lastIndex] > 50;
 
-  return isEma9AboveEma21 && isRsiAbove50;
+  return isEmaFastAboveEmaSlow && isRsiAbove50;
 };
 
 const getTickers = async () => {
