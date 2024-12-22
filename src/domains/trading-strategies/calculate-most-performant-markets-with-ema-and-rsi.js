@@ -17,8 +17,8 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
 
   for (const ticker of tickers) {
     logger.info(`Analyzing market ${ticker.symbol}`);
-    const candles = await getCandles(ticker.symbol);
-    const isPerformant = await isMarketPerformant(candles);
+
+    const isPerformant = await isMarketPerformant(ticker.symbol);
     if (isPerformant) performantTickers.push(ticker);
     await sleep(250);
   }
@@ -28,7 +28,31 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   logger.info(`Found ${performantTickers.length} performant markets: ${JSON.stringify(performantTickers.map(t => t.symbol))}`);
 };
 
-const isMarketPerformant = async (candles) => {
+const isMarketPerformant = async (symbol) => {
+  const settings = getSettings();
+
+  const candles = await getCandles(symbol);
+  if (!candles.length) false;
+
+  let isPerformant = validateEmaAndRsi(candles);
+  if (!isPerformant) return false;
+
+  if (settings.validatePenultimateCandleVolume) isPerformant = validatePenultimateCandleVolumeAboveAverage(candles);
+  if (!isPerformant) return false;
+
+  if (settings.validatePenultimateCandleIsPositive) isPerformant = validatePenultimateCandleIsPositive(candles);
+  if (!isPerformant) return false;
+
+  if (settings.validateResistance) isPerformant = validateResistance(candles);
+  if (!isPerformant) return false;
+
+  if (settings.validateSpread) isPerformant = validateSpread(symbol);
+  if (!isPerformant) return false;
+
+  return isPerformant;
+};
+
+const validateEmaAndRsi = (candles) => {
   const settings = getSettings();
   const closes = candles.map(candle => candle[CandleEnum.Close]);
   const emaFast = ema(closes, { period: settings.emaFastPeriod });
@@ -39,30 +63,93 @@ const isMarketPerformant = async (candles) => {
   const isRsiAbove50 = rsiStrategy[lastIndex] > 50;
 
   return isEmaFastAboveEmaSlow && isRsiAbove50;
+}
+
+const validatePenultimateCandleVolumeAboveAverage = (candles) => {
+  const settings = getSettings();
+  const volumes = candles.map(candle => candle[CandleEnum.Volume]).slice(-20);
+  const averageVolume = volumes.reduce((acc, volume) => acc + volume, 0) / volumes.length;
+  const penultimateVolume = volumes[volumes.length - 2];
+  const valid = penultimateVolume > averageVolume * settings.validatePenultimateCandleVolumeFactor;
+
+  logger.info(JSON.stringify({
+    penultimateVolume,
+    averageVolumeWithFactor: averageVolume * settings.validatePenultimateCandleVolumeFactor,
+    valid
+  }));
+
+  return valid;
 };
+
+const validatePenultimateCandleIsPositive = (candles) => {
+  const penultimateCandle = candles[candles.length - 2];
+  const penultimateCandleIsPositive = penultimateCandle[CandleEnum.Close] > penultimateCandle[CandleEnum.Open];
+
+  logger.info(JSON.stringify({ penultimateCandleIsPositive }));
+
+  return penultimateCandleIsPositive;
+};
+
+const validateResistance = (candles) => {
+  const settings = getSettings();
+  const highs = candles.map(candle => candle[CandleEnum.High]);
+  const lastPrice = candles[candles.length - 1][CandleEnum.Close];
+  const resistance = Math.max(...highs);
+  const lastPriceWithFactor = lastPrice * settings.validateResistanceFactor;
+  const valid = resistance > lastPriceWithFactor;
+
+  logger.info(JSON.stringify({ resistance, lastPrice, lastPriceWithFactor, valid }));
+
+  return valid;
+};
+
+const validateSpread = async (symbol) => {
+  const settings = getSettings();
+  const orderBook = await getOrderBook(symbol);
+  const limitPercentage = settings.validateSpreadLimitPercentage;
+  const limitAmountQuote = settings.validateSpreadAmountQuote;
+
+  const asks = orderBook.asks;
+
+  if (!asks.length) return false;
+
+  let accumulatedAmountQuote = 0;
+  let firstPrice = asks[0][0];
+  let lastPrice = asks[0][0];
+  
+  for (const ask of asks) {
+    const [price, amount] = ask;
+    const amountQuote = price * amount;
+  
+    accumulatedAmountQuote += amountQuote;
+    lastPrice = price;
+    
+    if (accumulatedAmountQuote >= limitAmountQuote) break;
+  }
+  
+  const priceVariationPercentage = ((lastPrice - firstPrice) / firstPrice) * 100;
+  const valid = priceVariationPercentage <= limitPercentage;
+
+  logger.info(JSON.stringify({
+    limitPercentage,
+    priceVariationPercentage,
+    valid
+  }));
+
+  return valid;
+};
+
 
 const getTickers = async () => {
   const settings = getSettings();
-  const seenBases = new Set();
 
   return (await connector.getTickers())
     .filter((ticker) => {
       const quote = ticker.symbol.split('/')[1];
-      return ticker.quoteVolume > settings.quoteVolumeLimit &&
-        ticker.percentage > 0 &&
-        quote === settings.quoteCurrency;
+      return quote === settings.quoteCurrency
+        && ticker.quoteVolume > settings.quoteVolumeLimit;
     })
-    .sort((a, b) => b.percentage - a.percentage)
-    .filter(ticker => {
-      const base = ticker.symbol.split('/')[0];
-
-      if (!seenBases.has(base)) {
-        seenBases.add(base);
-        return true;
-      }
-
-      return false;
-    });
+    .sort((a, b) => b.percentage - a.percentage);
 }
 
 const getCandles = async (symbol) => {
@@ -78,3 +165,6 @@ const getCandles = async (symbol) => {
   );
 };
 
+const getOrderBook = async (symbol) => {
+  return connector.getOrderBook(symbol);
+};
