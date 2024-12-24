@@ -12,20 +12,27 @@ const NUMBER_OF_CANDLES = 100;
 export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   const tickers = await getTickers();
   const performantTickers = [];
+  const candlesMap = {};
 
   logger.info(`Calculating most performant markets with EMA and RSI for ${tickers.length} tickers`);
 
   for (const ticker of tickers) {
     logger.info(`Analyzing market ${ticker.symbol}`);
 
+    const candles = await getCandles(ticker.symbol);
+    candlesMap[ticker.symbol] = candles;
+
     const isPerformant = await isMarketPerformant(ticker.symbol);
     if (isPerformant) performantTickers.push(ticker);
+
     await sleep(250);
   }
 
-  await savePerformantMarkets(performantTickers);
+  const rankedTickers = rankPerformantTickers(performantTickers, candlesMap);
 
-  logger.info(`Found ${performantTickers.length} performant markets: ${JSON.stringify(performantTickers.map(t => t.symbol))}`);
+  await savePerformantMarkets(rankedTickers);
+
+  logger.info(`Found ${rankedTickers.length} performant markets: ${JSON.stringify(rankedTickers.map(t => t.ticker.symbol))}`);
 };
 
 const isMarketPerformant = async (symbol) => {
@@ -85,9 +92,13 @@ const validatePenultimateCandleIsPositive = (candles) => {
   const penultimateCandle = candles[candles.length - 2];
   const penultimateCandleIsPositive = penultimateCandle[CandleEnum.Close] > penultimateCandle[CandleEnum.Open];
 
-  logger.info(JSON.stringify({ penultimateCandleIsPositive }));
+  const lastCandle = candles[candles.length - 1];
+  const lastCandleIsPositive = lastCandle[CandleEnum.Close] > lastCandle[CandleEnum.Open];
 
-  return penultimateCandleIsPositive;
+
+  logger.info(JSON.stringify({ lastCandleIsPositive, penultimateCandleIsPositive }));
+
+  return penultimateCandleIsPositive && lastCandleIsPositive;
 };
 
 const validateResistance = (candles) => {
@@ -167,4 +178,39 @@ const getCandles = async (symbol) => {
 
 const getOrderBook = async (symbol) => {
   return connector.getOrderBook(symbol);
+};
+
+const rankPerformantTickers = (performantTickers, candlesMap) => {
+  const settings = getSettings();
+
+  return performantTickers.map(ticker => {
+    const candles = candlesMap[ticker.symbol];
+
+    // Calculate score for crossed EMA
+    const closes = candles.map(c => c[CandleEnum.Close]);
+    const emaFast = ema(closes, { period: settings.emaFastPeriod });
+    const emaSlow = ema(closes, { period: settings.emaSlowPeriod });
+    const lastIndex = closes.length - 1;
+    const emaScore = emaFast[lastIndex] - emaSlow[lastIndex]; // More difference => More score
+
+    // Calculate score for RSI
+    const rsiValues = rsi(closes, { period: settings.rsiPeriod });
+    const rsiScore = rsiValues[lastIndex] > 50 ? rsiValues[lastIndex] - 50 : 0; // RSI higher than 50 increments score
+
+    // Calculate score for volume
+    const volumes = candles.map(c => c[CandleEnum.Volume]).slice(-20);
+    const averageVolume = volumes.reduce((acc, vol) => acc + vol, 0) / volumes.length;
+    const penultimateVolume = volumes[volumes.length - 2];
+    const volumeScore = penultimateVolume > averageVolume ? (penultimateVolume / averageVolume) - 1 : 0;
+
+    // Calculate resistance distance
+    const highs = candles.map(c => c[CandleEnum.High]);
+    const lastPrice = closes[lastIndex];
+    const resistance = Math.max(...highs);
+    const resistanceScore = (resistance - lastPrice) / lastPrice; // More distance => More score
+
+    // Combine scores
+    const totalScore = (emaScore * 0.4) + (rsiScore * 0.3) + (volumeScore * 0.2) + (resistanceScore * 0.1);
+    return { ticker, score: totalScore };
+  }).sort((a, b) => b.score - a.score); // Order by highest score
 };
