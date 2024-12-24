@@ -10,6 +10,7 @@ const CANDLES_INTERVAL = 5;
 const NUMBER_OF_CANDLES = 100;
 
 export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
+  let index = 0;
   const tickers = await getTickers();
   const performantTickers = [];
   const candlesMap = {};
@@ -17,7 +18,8 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   logger.info(`Calculating most performant markets with EMA and RSI for ${tickers.length} tickers`);
 
   for (const ticker of tickers) {
-    logger.info(`Analyzing market ${ticker.symbol}`);
+    index++;
+    logger.info(`${index}/${tickers.length} Analyzing market ${ticker.symbol}`);
 
     const candles = await getCandles(ticker.symbol);
     candlesMap[ticker.symbol] = candles;
