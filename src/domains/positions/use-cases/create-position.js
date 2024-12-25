@@ -52,7 +52,7 @@ const getPositionToCreate = async (order) => {
     exitOrderId: '',
     exitPrice: 0,
     exitCost: 0,
-
+    lowerProfitPercentage: 0
   };
 
   return position;

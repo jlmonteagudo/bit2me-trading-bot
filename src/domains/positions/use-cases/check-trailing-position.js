@@ -4,6 +4,7 @@ import { getSellQuote } from '../../order-book/index.js';
 import { getSettings } from '../../settings/index.js';
 import { closePosition } from './close-position.js';
 import { broadcastExitCost } from '../broadcasts/exit-cost.broadcast.js';
+import { truncateFloat } from '../../../core/util/math.js';
 import * as repository from '../repository/positions.repository.js';
 
 export const checkTrailingPosition = () => {
@@ -31,7 +32,16 @@ const processReceivedOrderBook = async (orderBook) => {
   //   await repository.updatePosition(position, true);
   // }
 
+  const profitPercentage = getProfitPercentage(position.entryCost, exitCost);
+  position.lowerProfitPercentage = Math.min(position.lowerProfitPercentage, profitPercentage);
+
   if (exitCost < position.stopLossCost || exitCost > position.takeProfitCost) closePosition(position.id);
 
   broadcastExitCost(exitCost);
+};
+
+const getProfitPercentage = (entryCost, exitCost) => {
+    const profit = exitCost - entryCost;
+    const profitPercentage = truncateFloat((profit / entryCost) * 100, 2);
+    return profitPercentage;
 };
