@@ -5,6 +5,7 @@ import { CandleEnum } from '../candles/enums/candle.enum.js';
 import { ema, rsi } from 'indicatorts';
 import { savePerformantMarkets } from './repository/trading-strategies.repository.js';
 import { getSettings } from '../settings/index.js';
+import { broadcastLog } from './broadcasts/log.broadcast.js';
 
 const CANDLES_INTERVAL = 5;
 const NUMBER_OF_CANDLES = 100;
@@ -19,7 +20,9 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
 
   for (const ticker of tickers) {
     index++;
-    logger.info(`${index}/${tickers.length} Analyzing market ${ticker.symbol}`);
+    const logMessage = `${index}/${tickers.length} Analyzing market ${ticker.symbol}. Found: ${performantTickers.length}`;
+    logger.info(logMessage);
+    broadcastLog(logMessage);
 
     const candles = await getCandles(ticker.symbol);
     candlesMap[ticker.symbol] = candles;
