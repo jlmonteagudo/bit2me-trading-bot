@@ -38,7 +38,6 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   await savePerformantMarkets(rankedTickers);
 
   logger.info(`Found ${rankedTickers.length} performant markets: ${JSON.stringify(rankedTickers.map(t => t.ticker.symbol))}`);
-  broadcastLog('');
 };
 
 const isMarketPerformant = async (symbol) => {
