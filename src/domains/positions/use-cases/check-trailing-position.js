@@ -15,7 +15,7 @@ const processReceivedOrderBook = async (orderBook) => {
   const position = getCurrentPosition();
   if (!position) return;
 
-  const settings = getSettings(true);
+  const settings = getSettings();
   const sellQuote = await getSellQuote(position.symbol, position.baseAmount, orderBook);
   const feeAmount = position.feePercentage * sellQuote / 100;
   const exitCost = sellQuote - feeAmount;

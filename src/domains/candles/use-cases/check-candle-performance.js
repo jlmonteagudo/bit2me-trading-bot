@@ -12,7 +12,7 @@ export const checkCandlePerformance = () => {
 };
 
 const checkCandlePerformanceInternal = async () => {
-  const settings = getSettings(true);
+  const settings = getSettings();
   const settingsEntryPosition = settings.notifications.entryPosition;
   const symbol = settings.symbol;
   const endTime = new Date().getTime();

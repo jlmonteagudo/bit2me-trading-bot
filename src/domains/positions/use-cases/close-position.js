@@ -6,6 +6,8 @@ import * as positionsState from '../state/positions.state.js';
 import * as connector from '../../../conector/bit2me.js';
 import { getOrderFromExchange } from '../../orders/index.js';
 import { loadBalances } from '../../balances/use-cases/load-balances.usecase.js';
+import { getSettings } from '../../settings/index.js';
+import { messaging } from '../../../core/firebase/index.js';
 
 export const closePosition = async (id) => {
   logger.info(`Closing the position ${id}`);
@@ -44,9 +46,29 @@ export const closePosition = async (id) => {
   await repository.updatePosition(position);
   positionsState.setCurrentPosition(null);
   loadBalances();
+  sendPushNotification(position);
 };
 
 const createOrderInExchange = async (symbol, orderAmount) => {
   let createdOrder = await connector.createOrder(symbol, 'sell', 'market', orderAmount);
   return getOrderFromExchange(createdOrder.id, 10);
+};
+
+const sendPushNotification = async (position) => {
+  const settings = getSettings();
+  const result = position.profitPercentage > 0 ? 'profit' : 'loss';
+
+  try {
+    const response = await messaging.send({
+      token: settings.notifications.token,
+      notification: {
+        title: `'Position closed with ${result}'`,
+        body: `Position closed for ${position.symbol} with ${result} of ${position.profitPercentage}%`,
+      },
+    });
+
+    logger.info(`Push notification sent: ${JSON.stringify(response)}`);
+  } catch (error) {
+    logger.error(`Error sending push notification:`, error);
+  }
 };
