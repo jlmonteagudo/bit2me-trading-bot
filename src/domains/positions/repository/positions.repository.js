@@ -43,7 +43,8 @@ export const updatePosition = async (position) => {
     ...(position.exitAt !== undefined && { exitAt: position.exitAt }),
     status: position.status,
     takeProfitCost: position.takeProfitCost,
-    stopLossCost: position.stopLossCost
+    stopLossCost: position.stopLossCost,
+    lowerProfitPercentage: position.lowerProfitPercentage,
   }
 
   await db.ref(POSITIONS_PATH).child(position.id).update(update);
