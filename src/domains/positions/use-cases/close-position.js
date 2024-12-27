@@ -27,6 +27,9 @@ export const closePosition = async (id) => {
     position.exitAt = new Date().getTime();
     position.status = 'closed';
 
+    if (positionsState.getCurrentPosition()) {
+      position.lowerProfitPercentage = positionsState.getCurrentPosition().lowerProfitPercentage;
+    }
   } catch (error) {
     position.exitPrice = 0;
     position.exitCost = 0;

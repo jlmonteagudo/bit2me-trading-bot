@@ -33,7 +33,7 @@ const processReceivedOrderBook = async (orderBook) => {
   // }
 
   const profitPercentage = getProfitPercentage(position.entryCost, exitCost);
-  position.lowerProfitPercentage = Math.min(position.lowerProfitPercentage, profitPercentage);
+  position.lowerProfitPercentage = Math.min((position.lowerProfitPercentage ?? 0), profitPercentage);
 
   if (exitCost < position.stopLossCost || exitCost > position.takeProfitCost) closePosition(position.id);
 
