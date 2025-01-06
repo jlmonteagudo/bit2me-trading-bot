@@ -62,7 +62,7 @@ const sendPushNotification = async (position) => {
     const response = await messaging.send({
       token: settings.notifications.token,
       notification: {
-        title: `'Position closed with ${result}'`,
+        title: `Position closed with ${result}`,
         body: `Position closed for ${position.symbol} with ${result} of ${position.profitPercentage}%`,
       },
     });

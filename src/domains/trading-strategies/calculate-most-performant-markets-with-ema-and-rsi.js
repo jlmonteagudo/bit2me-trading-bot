@@ -7,9 +7,6 @@ import { savePerformantMarkets } from './repository/trading-strategies.repositor
 import { getSettings } from '../settings/index.js';
 import { broadcastLog } from './broadcasts/log.broadcast.js';
 
-const CANDLES_INTERVAL = 5;
-const NUMBER_OF_CANDLES = 100;
-
 export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   let index = 0;
   const tickers = await getTickers();
@@ -132,17 +129,17 @@ const validateSpread = async (symbol) => {
   let accumulatedAmountQuote = 0;
   let firstPrice = asks[0][0];
   let lastPrice = asks[0][0];
-  
+
   for (const ask of asks) {
     const [price, amount] = ask;
     const amountQuote = price * amount;
-  
+
     accumulatedAmountQuote += amountQuote;
     lastPrice = price;
-    
+
     if (accumulatedAmountQuote >= limitAmountQuote) break;
   }
-  
+
   const priceVariationPercentage = ((lastPrice - firstPrice) / firstPrice) * 100;
   const valid = priceVariationPercentage <= limitPercentage;
 
@@ -169,13 +166,14 @@ const getTickers = async () => {
 }
 
 const getCandles = async (symbol) => {
+  const settings = getSettings();
   const endTime = new Date().getTime();
-  const intervalMilliseconds = CANDLES_INTERVAL * NUMBER_OF_CANDLES * 60 * 1000;
+  const intervalMilliseconds = settings.timeframeInterval * settings.numberOfCandles * 60 * 1000;
   const startTime = endTime - intervalMilliseconds;
 
   return connector.getCandles(
     symbol,
-    CANDLES_INTERVAL,
+    settings.timeframeInterval,
     startTime,
     endTime
   );

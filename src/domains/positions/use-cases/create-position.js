@@ -19,7 +19,7 @@ export const createPosition = async (
 
     const createdOrder = await createOrderInExchange(symbol, orderAmount);
     const position = await getPositionToCreate(createdOrder);
-    const createdPostion = await repository.createPosition(position, true);
+    const createdPostion = await repository.createPosition(position);
     positionsState.setCurrentPosition(createdPostion);
     newPositionOpenEventEmitter.emit(Events.NewPositionOpen, createdOrder);
     loadBalances();
