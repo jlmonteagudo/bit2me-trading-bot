@@ -7,6 +7,8 @@ import { savePerformantMarkets } from './repository/trading-strategies.repositor
 import { getSettings } from '../settings/index.js';
 import { getNotifications, disableNotifyEntrySignals } from '../notifications/index.js';
 import { broadcastLog } from './broadcasts/log.broadcast.js';
+import { messaging } from '../../core/firebase/index.js';
+
 
 export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   let index = 0;
