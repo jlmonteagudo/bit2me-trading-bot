@@ -3,11 +3,11 @@ import { getSettingsDB } from '../repository/settings.repository.js';
 import { setSettings } from '../use-cases/get-settings.usecase.js';
 
 export const listenSettingsUpdated = () => {
-  const settingsDB = getSettingsDB(true);
+  const settingsDB = getSettingsDB();
 
   settingsDB.on('value', (data) => {
     const settings = data.val();
-    setSettings(settings, true);
+    setSettings(settings);
     logger.info(`Settings: ${JSON.stringify(settings)}`);
   });
 }

@@ -6,7 +6,7 @@ import * as positionsState from '../state/positions.state.js';
 import * as connector from '../../../conector/bit2me.js';
 import { getOrderFromExchange } from '../../orders/index.js';
 import { loadBalances } from '../../balances/use-cases/load-balances.usecase.js';
-import { getSettings } from '../../settings/index.js';
+import { getNotifications } from '../../notifications/index.js';
 import { messaging } from '../../../core/firebase/index.js';
 
 export const closePosition = async (id) => {
@@ -44,9 +44,9 @@ export const closePosition = async (id) => {
   }
 
   await repository.updatePosition(position);
+  await sendPushNotification(position);
   positionsState.setCurrentPosition(null);
   loadBalances();
-  sendPushNotification(position);
 };
 
 const createOrderInExchange = async (symbol, orderAmount) => {
@@ -55,12 +55,12 @@ const createOrderInExchange = async (symbol, orderAmount) => {
 };
 
 const sendPushNotification = async (position) => {
-  const settings = getSettings();
+  const notifications = getNotifications();
   const result = position.profitPercentage > 0 ? 'profit' : 'loss';
 
   try {
     const response = await messaging.send({
-      token: settings.notifications.token,
+      token: notifications.token,
       notification: {
         title: `Position closed with ${result}`,
         body: `Position closed for ${position.symbol} with ${result} of ${position.profitPercentage}%`,

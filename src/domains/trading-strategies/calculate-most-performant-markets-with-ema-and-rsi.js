@@ -5,6 +5,7 @@ import { CandleEnum } from '../candles/enums/candle.enum.js';
 import { ema, rsi } from 'indicatorts';
 import { savePerformantMarkets } from './repository/trading-strategies.repository.js';
 import { getSettings } from '../settings/index.js';
+import { getNotifications, disableNotifyEntrySignals } from '../notifications/index.js';
 import { broadcastLog } from './broadcasts/log.broadcast.js';
 
 export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
@@ -35,6 +36,7 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   await savePerformantMarkets(rankedTickers);
 
   logger.info(`Found ${rankedTickers.length} performant markets: ${JSON.stringify(rankedTickers.map(t => t.ticker.symbol))}`);
+  if (rankedTickers.length) sendPushNotification(rankedTickers.length);
 };
 
 const isMarketPerformant = async (symbol) => {
@@ -216,4 +218,26 @@ const rankPerformantTickers = (performantTickers, candlesMap) => {
     const totalScore = (emaScore * 0.4) + (rsiScore * 0.3) + (volumeScore * 0.2) + (resistanceScore * 0.1);
     return { ticker, score: totalScore };
   }).sort((a, b) => b.score - a.score); // Order by highest score
+};
+
+const sendPushNotification = async (numberOfEntrySignals) => {
+  const notifications = getNotifications();
+
+  if (!notifications.notifyEntrySignal) return;
+
+  try {
+    const response = await messaging.send({
+      token: notifications.token,
+      notification: {
+        title: `New entry signals`,
+        body: `Found ${numberOfEntrySignals} new entry signals`,
+      },
+    });
+
+    logger.info(`Push notification sent: ${JSON.stringify(response)}`);
+
+    disableNotifyEntrySignals();
+  } catch (error) {
+    logger.error(`Error sending push notification:`, error);
+  }
 };
