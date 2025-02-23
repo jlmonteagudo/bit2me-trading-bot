@@ -1,4 +1,4 @@
-import * as connector from '../../../conector/bit2me.js';
+import { connector } from '../../../conector/index.js';
 
 let market;
 

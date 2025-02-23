@@ -1,4 +1,4 @@
-import * as connector from '../../../conector/bit2me.js';
+import { connector } from '../../../conector/index.js';
 import { saveBalances } from '../repository/balances.repository.js';
 import { logger } from '../../../core/logger/logger.js';
 
@@ -14,6 +14,6 @@ export const loadBalances = async () => {
     const balances = await connector.getBalance();
     await saveBalances(balances);
   } catch (error) {
-    logger.error('Error loading balances: ', error.message);
+    logger.error('Error loading balances: ', error);
   }
 };

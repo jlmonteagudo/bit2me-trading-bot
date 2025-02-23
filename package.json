@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "axios": "^1.6.8",
+    "ccxt": "^4.4.61",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "firebase-admin": "^12.1.0",

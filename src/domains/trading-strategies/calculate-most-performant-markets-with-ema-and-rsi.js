@@ -1,5 +1,5 @@
 import { logger } from '../../core/logger/logger.js';
-import * as connector from '../../conector/bit2me.js';
+import { connector } from '../../conector/index.js';
 import { sleep } from '../../core/util/sleep.js';
 import { CandleEnum } from '../candles/enums/candle.enum.js';
 import { ema, rsi } from 'indicatorts';

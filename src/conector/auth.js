@@ -1,7 +1,7 @@
 import { createHash, createHmac } from 'node:crypto';
 
-const API_KEY = process.env.API_KEY;
-const SECRET = process.env.SECRET;
+const API_KEY = process.env.BIT2ME_API_KEY;
+const SECRET = process.env.BIT2ME_SECRET;
 
 export const getAuthHeaders = (path, body) => {
   const nonce = new Date().getTime();

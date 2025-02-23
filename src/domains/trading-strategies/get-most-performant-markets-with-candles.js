@@ -1,4 +1,4 @@
-import * as connector from '../../conector/bit2me.js';
+import { connector } from '../../conector/index.js';
 import { CandleEnum } from '../candles/enums/candle.enum.js';
 
 const QUOTE_VOLUME_LIMIT = 1_000_000;

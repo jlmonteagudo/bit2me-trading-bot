@@ -3,7 +3,7 @@ import { getMarket } from '../../markets/index.js';
 import { truncateFloat } from '../../../core/util/math.js';
 import * as repository from '../repository/positions.repository.js';
 import * as positionsState from '../state/positions.state.js';
-import * as connector from '../../../conector/bit2me.js';
+import { connector } from '../../../conector/index.js';
 import { getOrderFromExchange } from '../../orders/index.js';
 import { loadBalances } from '../../balances/use-cases/load-balances.usecase.js';
 import { getNotifications } from '../../notifications/index.js';

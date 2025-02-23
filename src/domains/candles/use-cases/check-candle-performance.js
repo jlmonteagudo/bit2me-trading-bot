@@ -1,5 +1,5 @@
 import { getSettings } from '../../settings/index.js';
-import * as connector from '../../../conector/bit2me.js';
+import { connector } from '../../../conector/index.js';
 import { CandleEnum } from '../enums/candle.enum.js';
 import { messaging } from '../../../core/firebase/index.js';
 import { logger } from '../../../core/logger/logger.js';

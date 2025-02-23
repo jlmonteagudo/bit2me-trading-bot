@@ -1,6 +1,7 @@
 import 'dotenv/config.js';
 import * as firebase from './core/firebase/index.js';
 import * as listeners from './listeners.js';
+import * as connector from './conector/index.js';
 import { initializeWebSocket } from './websockets/server.js';
 import { listen, getServer } from './http/server.js';
 import { checkTrailingPosition, initializeCurrentPosition } from './domains/positions/index.js';
@@ -10,6 +11,8 @@ import { watchBalances } from './domains/balances/use-cases/load-balances.usecas
 
 firebase.initialize();
 listeners.initialize();
+
+connector.initialize('bit2me');
 
 watchBalances();
 await initializeCurrentPosition();
