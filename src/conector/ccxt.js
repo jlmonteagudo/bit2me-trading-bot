@@ -4,12 +4,25 @@ import { logger } from '../core/logger/logger.js';
 export let exchange;
 
 export const initialize = async (exchangeId) => {
-  exchange = new ccxt.pro[exchangeId]({
-    apiKey: process.env.BINANCE_API_KEY,
-    secret: process.env.BINANCE_SECRET,
-  });
-  
-  await exchange.loadMarkets();
+  try {
+    exchange = new ccxt.pro[exchangeId]({
+      apiKey: process.env.BINANCE_API_KEY,
+      secret: process.env.BINANCE_SECRET,
+    });
+
+    await exchange.loadMarkets();
+  } catch (error) {
+    const hostIP = Object.values(os.networkInterfaces())
+      .flat()
+      .find((iface) => iface.family === 'IPv4' && !iface.internal)?.address || 'Unknown IP';
+
+    logger.error(`
+      Error initializing connector: ${error.message}.
+      Host IP: ${hostIP}
+    `);
+
+    throw error;
+  }
 };
 
 
@@ -30,7 +43,7 @@ export const getTickers = async () => {
     let tickers = await exchange.fetchTickers(undefined, { type: 'spot' });
 
     tickers = Object.values(tickers)
-    
+
     tickers.forEach((ticker) => {
       delete ticker.info;
       delete ticker.markPrice;
@@ -74,7 +87,7 @@ export const createOrder = async (
 ) => {
   if (amountInQuote === true && orderType == 'market') {
     if (side === 'sell') return exchange.createMarketSellOrderWithCost(symbol, amount);
-    if (side === 'buy') return exchange.createMarketBuyOrderWithCost(symbol, amount); 
+    if (side === 'buy') return exchange.createMarketBuyOrderWithCost(symbol, amount);
   }
 
   return exchange.createOrder(symbol, orderType, side, amount, price, { stopPrice, clientOrderId });
