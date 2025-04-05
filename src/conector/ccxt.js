@@ -1,5 +1,6 @@
 import ccxt from 'ccxt';
 import { logger } from '../core/logger/logger.js';
+import os from 'os';
 
 export let exchange;
 
