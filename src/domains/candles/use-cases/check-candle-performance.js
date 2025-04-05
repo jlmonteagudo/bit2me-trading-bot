@@ -64,6 +64,8 @@ const getIntervalPercentagePriceVariation = (candles) => {
 
 
 const sendPushNotification = async (token, payload) => {
+  if (!token) return;
+
   try {
     const response = await messaging.send({
       token: token,

@@ -60,5 +60,5 @@ const getPositionToCreate = async (order) => {
 
 const createOrderInExchange = async (symbol, orderAmount) => {
   let createdOrder = await connector.createOrder(symbol, 'buy', 'market', orderAmount, undefined, undefined, undefined, true);
-  return getOrderFromExchange(createdOrder.id, 10);
+  return getOrderFromExchange(createdOrder.id, symbol, 10);
 };

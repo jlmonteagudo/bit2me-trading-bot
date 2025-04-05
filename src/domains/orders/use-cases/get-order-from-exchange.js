@@ -2,14 +2,14 @@ import { logger } from '../../../core/logger/logger.js';
 import { sleep } from '../../../core/util/sleep.js';
 import { connector } from '../../../conector/index.js';
 
-export const getOrderFromExchange = async (orderId, maxRetries) => {
+export const getOrderFromExchange = async (orderId, symbol, maxRetries) => {
   let createdOrder;
   let retries = 0;
   let hasToRetry = true;
 
   while (hasToRetry && retries < maxRetries) {
     try {
-      createdOrder = await connector.getOrder(orderId);
+      createdOrder = await connector.getOrder(orderId, symbol);
       if (createdOrder.status !== 'open') hasToRetry = false;
       else await sleep(1000);
     } catch (error) {
@@ -23,7 +23,7 @@ export const getOrderFromExchange = async (orderId, maxRetries) => {
 
   if (createdOrder.cost <= 0) throw new Error('Order cost is 0');
 
-  const orderFee = await getOrderFee(orderId);
+  const orderFee = await getOrderFee(orderId, symbol);
   createdOrder.feeAmount = orderFee.feeAmount;
   createdOrder.feePercentage = orderFee.feePercentage;
 
@@ -31,8 +31,8 @@ export const getOrderFromExchange = async (orderId, maxRetries) => {
 
 };
 
-const getOrderFee = async (orderId) => {
-  const trades = await connector.getTradesByOrder(orderId);
+const getOrderFee = async (orderId, symbol) => {
+  const trades = await connector.getTradesByOrder(orderId, symbol);
 
   const orderFee = {
     feeAmount: trades.reduce((acc, trade) => acc + trade.feeAmount, 0),

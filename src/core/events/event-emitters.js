@@ -9,7 +9,10 @@ export const newPositionOpenEventEmitter = new EventEmitter();
 
 websocketDataEventEmitter.on(Events.WebsocketDataReceived, (data) => {
   const parsedData = JSON.parse(data.toString('utf-8'));
-  if (parsedData.event === Events.OrderBookReceived)
-    orderBookEventEmitter.emit(Events.OrderBookReceived, parsedData.data);
+  if (isOrderBookEvent(parsedData))
+    orderBookEventEmitter.emit(Events.OrderBookReceived, parsedData);
 });
 
+const isOrderBookEvent = (data) => {
+  return (data.event === Events.OrderBookReceived || (!!data.bids && !!data.asks));
+};

@@ -1,10 +1,13 @@
 import express from 'express';
 import http from 'http';
+import cors from 'cors';
 import { logger } from '../core/logger/logger.js';
 import { setupRoutes } from './routes.js';
 
 const app = express();
 const server = http.createServer(app);
+
+app.use(cors())
 
 setupRoutes(app);
 

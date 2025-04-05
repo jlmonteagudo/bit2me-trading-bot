@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getAuthHeaders } from './auth.js';
+import { logger } from '../core/logger/logger.js';
 
 const SERVER_URL = 'https://gateway.bit2me.com';
 const BASE_PATH = '/v1/trading';
@@ -88,6 +89,7 @@ export const getCandles = async (symbol, interval, startTime, endTime) => {
     const candles = response.data.filter((candle) => candle[0] >= startTime);
     return candles;
   } catch (error) {
+    logger.error('Error getting candles', error);
     return [];
   }
 };

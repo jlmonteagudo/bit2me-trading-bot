@@ -1,148 +1,112 @@
 import ccxt from 'ccxt';
+import { logger } from '../core/logger/logger.js';
 
-let exchange;
+export let exchange;
 
-export const initialize = (exchangeId) => {
-  exchange = new ccxt[exchangeId]({
+export const initialize = async (exchangeId) => {
+  exchange = new ccxt.pro[exchangeId]({
     apiKey: process.env.BINANCE_API_KEY,
-    secret: process.env.BINANCE_API_SECRET,
+    secret: process.env.BINANCE_SECRET,
   });
+  
+  await exchange.loadMarkets();
 };
+
 
 export const getBalance = async () => {
-  const balance = await exchange.fetchBalance();
+  const balance = await exchange.fetchBalance({ omitZeroBalances: true });
+  const currencies = Object.keys(balance.total);
+  const parsedBalance = currencies.map((currency) => ({
+    currency,
+    balance: balance.free[currency],
+    blockedBalance: balance.used[currency],
+  }));
 
-  console.log({ balance });
-
-  return balance;
+  return parsedBalance;
 };
 
+export const getTickers = async () => {
+  try {
+    let tickers = await exchange.fetchTickers(undefined, { type: 'spot' });
 
+    tickers = Object.values(tickers)
+    
+    tickers.forEach((ticker) => {
+      delete ticker.info;
+      delete ticker.markPrice;
+      delete ticker.indexPrice;
+    });
 
-// export const getOpenOrders = async (symbol) => {
-//   const url = `${BASE_PATH}/order?symbol=${symbol}&status=open`;
-//   const requestConfig = getAuthHeaders(url);
-//   const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);
-//   return response.data;
-// };
+    return tickers;
+  } catch (error) {
+    logger.error('Error fetching tickers: ', error);
+    return [];
+  }
+};
 
-// export const getOrder = async (orderId) => {
-//   const url = `${BASE_PATH}/order/${orderId}`;
-//   const requestConfig = getAuthHeaders(url);
-//   const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);
-//   return response.data;
-// };
+export const getCandles = async (symbol, interval, startTime, endTime, limit) => {
+  try {
+    return exchange.fetchOHLCV(symbol, interval, undefined, limit)
+  } catch (error) {
+    logger.error('Error getting candles', error);
+    return [];
+  }
+};
 
-// export const getTradesByOrder = async (orderId) => {
-//   const url = `${BASE_PATH}/order/${orderId}/trades`;
-//   const requestConfig = getAuthHeaders(url);
-//   const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);
-//   return response.data;
-// };
+export const getOrderBook = async (symbol) => {
+  try {
+    return exchange.fetchOrderBook(symbol);
+  } catch (error) {
+    logger.error('Error getting the order book', error);
+    return undefined;
+  }
+};
 
-// export const cancelOrder = async (orderId) => {
-//   const url = `${BASE_PATH}/order/${orderId}`;
-//   const requestConfig = getAuthHeaders(url);
-//   const response = await axios.delete(`${SERVER_URL}${url}`, requestConfig);
-//   return response.data;
-// };
+export const createOrder = async (
+  symbol,
+  side,
+  orderType,
+  amount,
+  price,
+  stopPrice,
+  clientOrderId,
+  amountInQuote
+) => {
+  if (amountInQuote === true && orderType == 'market') {
+    if (side === 'sell') return exchange.createMarketSellOrderWithCost(symbol, amount);
+    if (side === 'buy') return exchange.createMarketBuyOrderWithCost(symbol, amount); 
+  }
 
-// export const getBalance = async () => {
-//   const url = `${BASE_PATH}/wallet/balance`;
-//   const requestConfig = getAuthHeaders(url);
-//   const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);
-//   return response.data;
-// };
+  return exchange.createOrder(symbol, orderType, side, amount, price, { stopPrice, clientOrderId });
+};
 
-// export const getBalanceByCurrency = async (symbol) => {
-//   const url = `${BASE_PATH}/wallet/balance?symbols=${symbol}`;
-//   const requestConfig = getAuthHeaders(url);
-//   const response = await axios.get(`${SERVER_URL}${url}`, requestConfig);
-//   return response.data[0]?.balance;
-// };
+export const getOrder = async (orderId, symbol) => {
+  const order = await exchange.fetchOrder(orderId, symbol);
+  order.orderAmount = order.filled;
+  return order;
+};
 
-// export const createOrder = async (
-//   symbol,
-//   side,
-//   orderType,
-//   amount,
-//   price,
-//   stopPrice,
-//   clientOrderId,
-//   amountInQuote
-// ) => {
-//   const order = {
-//     symbol,
-//     side,
-//     orderType,
-//     amount: amount.toString(),
-//     price: price?.toString(),
-//     stopPrice: stopPrice?.toString(),
-//     clientOrderId,
-//   };
+export const getTradesByOrder = async (orderId, symbol) => {
+  let trades = await exchange.fetchOrderTrades(orderId, symbol);
 
-//   if (amountInQuote === true) {
-//     order.amountInQuote = amountInQuote;
-//   };
+  trades = trades.map((trade) => {
+    trade.feeAmount = trade.fee.cost;
+    trade.feePercentage = (trade.fee.cost / trade.amount) * 100;
+    return trade;
+  });
 
-//   const url = `${BASE_PATH}/order`;
-//   const requestConfig = getAuthHeaders(url, order);
-//   const response = await axios.post(
-//     `${SERVER_URL}${url}`,
-//     order,
-//     requestConfig
-//   );
+  return trades;
+};
 
-//   return response.data;
-// };
+export const getMarket = async (symbol) => {
+  try {
+    const market = exchange.markets[symbol];
 
-// export const getCandles = async (symbol, interval, startTime, endTime) => {
-//   try {
-//     const url = `${BASE_PATH}/candle?symbol=${symbol}&interval=${interval}&startTime=${startTime}&endTime=${endTime}&limit=1000`;
-//     const response = await axios.get(`${SERVER_URL}${url}`);
-//     const candles = response.data.filter((candle) => candle[0] >= startTime);
-//     return candles;
-//   } catch (error) {
-//     return [];
-//   }
-// };
+    market.amountPrecision = -Math.log10(market.precision.amount);
+    market.pricePrecision = -Math.log10(market.precision.price);
 
-// export const getOrderBook = async (symbol) => {
-//   try {
-//     const url = `/v2/trading/order-book?symbol=${symbol}`;
-//     const response = await axios.get(`${SERVER_URL}${url}`);
-//     return response.data;
-//   } catch (error) {
-//     return undefined;
-//   }
-// };
-
-// export const getMarket = async (symbol) => {
-//   try {
-//     const url = `${BASE_PATH}/market-config?symbol=${symbol}`;
-//     const response = await axios.get(`${SERVER_URL}${url}`);
-//     return response.data[0];
-//   } catch (error) {
-//     return undefined;
-//   }
-// };
-
-// export const getTickers = async () => {
-//   try {
-//     const url = '/v2/trading/tickers';
-//     const response = await axios.get(`${SERVER_URL}${url}`);
-//     return response.data;
-//   } catch (error) {
-//     return [];
-//   }
-// };
-
-// export const getTicker = async (symbol) => {
-//   try {
-//     const url = '/v2/trading/tickers';
-//     const response = await axios.get(`${SERVER_URL}${url}`);
-//     return response.data.filter((ticker) => ticker.symbol === symbol)[0];
-//   } catch (error) {
-//     return undefined;
-//   }
-// };
+    return market;
+  } catch (error) {
+    return undefined;
+  }
+};

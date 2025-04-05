@@ -27,10 +27,10 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
     const candles = await getCandles(ticker.symbol);
     candlesMap[ticker.symbol] = candles;
 
-    const isPerformant = await isMarketPerformant(ticker.symbol);
+    const isPerformant = await isMarketPerformant(ticker.symbol, candles);
     if (isPerformant) performantTickers.push(ticker);
 
-    await sleep(250);
+    await sleep(50);
   }
 
   const rankedTickers = rankPerformantTickers(performantTickers, candlesMap);
@@ -41,25 +41,29 @@ export const calculateMostPerformantMarketsWithEMAAndRSI = async () => {
   if (rankedTickers.length) sendPushNotification(rankedTickers.length);
 };
 
-const isMarketPerformant = async (symbol) => {
+const isMarketPerformant = async (symbol, candles) => {
   const settings = getSettings();
 
-  const candles = await getCandles(symbol);
   if (!candles.length) false;
 
   let isPerformant = validateEmaAndRsi(candles);
+  logger.info(`validateEmaAndRsi: ${isPerformant}`);
   if (!isPerformant) return false;
 
   if (settings.validatePenultimateCandleVolume) isPerformant = validatePenultimateCandleVolumeAboveAverage(candles);
+  logger.info(`validatePenultimateCandleVolumeAboveAverage: ${isPerformant}`);
   if (!isPerformant) return false;
 
   if (settings.validatePenultimateCandleIsPositive) isPerformant = validatePenultimateCandleIsPositive(candles);
+  logger.info(`validatePenultimateCandleIsPositive: ${isPerformant}`);
   if (!isPerformant) return false;
 
   if (settings.validateResistance) isPerformant = validateResistance(candles);
+  logger.info(`validateResistance: ${isPerformant}`);
   if (!isPerformant) return false;
 
   if (settings.validateSpread) isPerformant = validateSpread(symbol);
+  logger.info(`validateSpread: ${isPerformant}`);
   if (!isPerformant) return false;
 
   return isPerformant;
@@ -171,15 +175,16 @@ const getTickers = async () => {
 
 const getCandles = async (symbol) => {
   const settings = getSettings();
-  const endTime = new Date().getTime();
-  const intervalMilliseconds = settings.timeframeInterval * settings.numberOfCandles * 60 * 1000;
-  const startTime = endTime - intervalMilliseconds;
+  // const endTime = new Date().getTime();
+  // const intervalMilliseconds = settings.timeframeInterval * settings.numberOfCandles * 60 * 1000;
+  // const startTime = endTime - intervalMilliseconds;
 
   return connector.getCandles(
     symbol,
     settings.timeframeInterval,
-    startTime,
-    endTime
+    undefined,
+    undefined,
+    settings.numberOfCandles
   );
 };
 
@@ -225,6 +230,7 @@ const rankPerformantTickers = (performantTickers, candlesMap) => {
 const sendPushNotification = async (numberOfEntrySignals) => {
   const notifications = getNotifications();
 
+  if (!notifications.token) return;
   if (!notifications.notifyEntrySignal) return;
 
   try {

@@ -51,11 +51,13 @@ export const closePosition = async (id) => {
 
 const createOrderInExchange = async (symbol, orderAmount) => {
   let createdOrder = await connector.createOrder(symbol, 'sell', 'market', orderAmount);
-  return getOrderFromExchange(createdOrder.id, 10);
+  return getOrderFromExchange(createdOrder.id, symbol, 10);
 };
 
 const sendPushNotification = async (position) => {
   const notifications = getNotifications();
+  if (!notifications.token) return;
+
   const result = position.profitPercentage > 0 ? 'profit' : 'loss';
 
   try {

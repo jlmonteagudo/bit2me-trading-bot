@@ -3,12 +3,12 @@ import * as ccxtConnector from './ccxt.js';
 
 export let connector;
 
-export const initialize = (exchangeId) => {
+export const initialize = async (exchangeId) => {
     if (exchangeId === 'bit2me') {
         connector = bit2meConnector;
     }
     else {
         connector = ccxtConnector;
-        connector.initialize(exchangeId);
+        await connector.initialize(exchangeId);
     }
 };
