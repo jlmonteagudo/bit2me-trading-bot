@@ -9,22 +9,11 @@ set -a
 source /opt/app/.env || { echo "❌ Error: No se pudo cargar .env"; exit 1; }
 set +a
 
-# Verificación de variables críticas
-required_vars=(
-  "DO_API_TOKEN" 
-  "DUCKDNS_TOKEN" 
-  "ADMIN_EMAIL"
-  "DO_REGISTRY"
-  "APP_IMAGE_NAME"
-  "DOMAIN"
-)
-
-for var in "${required_vars[@]}"; do
-  if [ -z "${!var}" ]; then
-    echo "❌ Error: La variable $var no está definida en .env"
-    exit 1
-  fi
-done
+# Configuración adicional
+DOMAIN="bit2me-trading.duckdns.org"
+APP_PORT="8080"
+CERTBOT_VENV_PATH="/opt/certbot-venv"
+CERTBOT_CONFIG_DIR="/opt/app/certbot"
 
 # =============================================
 # FUNCIONES AUXILIARES
@@ -71,18 +60,30 @@ dns_duckdns_propagation_seconds = 60
 EOF
   chmod 600 "${CERTBOT_CONFIG_DIR}"/duckdns/duckdns.ini
 
-  # Comando Certbot corregido (versión probada)
+  # Primero verificar la conexión con DuckDNS
+  echo "🛠️ Verificando conexión con DuckDNS..."
+  local current_ip=$(curl -4 -s http://ifconfig.me)
+  local update_result=$(curl -s "https://www.duckdns.org/update?domains=${DOMAIN%%.*}&token=${DUCKDNS_TOKEN}&ip=${current_ip}&verbose=true")
+  echo "Resultado de DuckDNS: $update_result"
+  
+  # Obtener certificado
   "${CERTBOT_VENV_PATH}"/bin/certbot certonly \
     --non-interactive \
     --agree-tos \
     --email "${ADMIN_EMAIL}" \
     --authenticator dns-duckdns \
     --dns-duckdns-credentials "${CERTBOT_CONFIG_DIR}"/duckdns/duckdns.ini \
-    --dns-duckdns-propagation-seconds 60 \
+    --dns-duckdns-propagation-seconds 120 \
     --domain "${DOMAIN}" \
     --config-dir "${CERTBOT_CONFIG_DIR}"/conf \
     --work-dir "${CERTBOT_CONFIG_DIR}"/work \
     --logs-dir "${CERTBOT_CONFIG_DIR}"/log || log_error "Falló al obtener certificado SSL"
+    
+  # Ajustar permisos
+  chmod -R 755 "${CERTBOT_CONFIG_DIR}"/conf/live
+  chmod 644 "${CERTBOT_CONFIG_DIR}"/conf/live/${DOMAIN}/fullchain.pem
+  chmod 644 "${CERTBOT_CONFIG_DIR}"/conf/live/${DOMAIN}/privkey.pem
+  chown -R root:root "${CERTBOT_CONFIG_DIR}"/conf/live
 
   log_success "Certificado SSL obtenido"
 }
@@ -113,8 +114,8 @@ http {
         listen 443 ssl;
         server_name ${DOMAIN};
 
-        ssl_certificate ${CERTBOT_CONFIG_DIR}/conf/live/${DOMAIN}/fullchain.pem;
-        ssl_certificate_key ${CERTBOT_CONFIG_DIR}/conf/live/${DOMAIN}/privkey.pem;
+        ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
 
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_prefer_server_ciphers on;
@@ -151,6 +152,8 @@ services:
       - NODE_ENV=production
     networks:
       - app-network
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
 
   nginx:
     image: nginx:alpine
@@ -160,8 +163,9 @@ services:
       - "443:443"
     volumes:
       - /opt/app/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ${CERTBOT_CONFIG_DIR}/conf:/etc/letsencrypt
-      - ${CERTBOT_CONFIG_DIR}/www:/var/www/certbot
+      - /opt/app/certbot/conf/live:/etc/letsencrypt/live:ro
+      - /opt/app/certbot/conf/archive:/etc/letsencrypt/archive:ro
+      - /opt/app/certbot/www:/var/www/certbot
     depends_on:
       - app
     networks:
@@ -208,7 +212,6 @@ EOF
   cat > /opt/app/renew-certs.sh <<EOF
 #!/bin/bash
 source /opt/app/.env
-docker-compose -f /opt/app/docker-compose.yml stop nginx
 ${CERTBOT_VENV_PATH}/bin/certbot renew \\
   --non-interactive \\
   --dns-duckdns \\
@@ -216,7 +219,7 @@ ${CERTBOT_VENV_PATH}/bin/certbot renew \\
   --config-dir ${CERTBOT_CONFIG_DIR}/conf \\
   --work-dir ${CERTBOT_CONFIG_DIR}/work \\
   --logs-dir ${CERTBOT_CONFIG_DIR}/log
-docker-compose -f /opt/app/docker-compose.yml start nginx
+docker-compose -f /opt/app/docker-compose.yml restart nginx
 EOF
   chmod +x /opt/app/renew-certs.sh
 
@@ -229,10 +232,47 @@ EOF
 function start_services() {
   echo "🚀 Iniciando servicios..."
   
+  # Cambiar al directorio correcto
   cd /opt/app || log_error "No se pudo acceder a /opt/app"
-  echo "${DO_API_TOKEN}" | docker login "${DO_REGISTRY}" -u doctl --password-stdin || log_error "Falló el login en Docker Registry"
+
+  # 1. Detener servicios previos y liberar puertos
+  echo "🛑 Deteniendo servicios existentes y liberando puertos..."
+  docker-compose down 2>/dev/null || true
+  
+  # Matar cualquier proceso usando los puertos 80/443
+  sudo fuser -k 80/tcp 2>/dev/null || true
+  sudo fuser -k 443/tcp 2>/dev/null || true
+  sleep 2  # Esperar que los puertos se liberen
+
+  # 2. Verificar puertos libres
+  echo "🔍 Verificando puertos..."
+  if ss -tulnp | grep -E ':80|:443'; then
+    echo "⚠️  Procesos usando puertos:"
+    sudo ss -tulnp | grep -E ':80|:443'
+    log_error "Los puertos 80/443 están en uso"
+  fi
+
+  # 3. Iniciar sesión en Docker Registry
+  echo "🔑 Autenticando en Docker Registry..."
+  echo "${DO_API_TOKEN}" | docker login "${DO_REGISTRY}" -u doctl --password-stdin 2>&1 | grep -v "WARNING" || log_error "Falló el login en Docker Registry"
+
+  # 4. Descargar imágenes
+  echo "📦 Descargando imágenes Docker..."
   docker-compose pull || log_error "Falló al descargar imágenes"
+
+  # 5. Iniciar servicios
+  echo "🔄 Iniciando contenedores..."
   docker-compose up -d || log_error "Falló al iniciar contenedores"
+
+  # 6. Verificar
+  echo "⏳ Esperando inicialización..."
+  sleep 5
+  
+  if ! docker ps | grep nginx; then
+    echo "⚠️  Nginx no se inició, mostrando logs..."
+    docker logs $(docker ps -lq --filter "name=nginx")
+    log_error "Nginx no se está ejecutando"
+  fi
 
   log_success "Servicios iniciados correctamente"
 }
